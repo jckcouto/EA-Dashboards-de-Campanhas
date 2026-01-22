@@ -48,6 +48,16 @@ SELECTOR_STYLES = f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
     
+    /* Hide Streamlit header bar */
+    header[data-testid="stHeader"] {{
+        background: transparent !important;
+        backdrop-filter: none !important;
+    }}
+    
+    #MainMenu, footer, header {{
+        visibility: hidden !important;
+    }}
+    
     * {{
         font-family: 'Montserrat', sans-serif !important;
     }}
@@ -346,6 +356,15 @@ INSTITUTIONAL_STYLES = f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
     
+    /* Hide Streamlit header bar */
+    header[data-testid="stHeader"] {{
+        background: transparent !important;
+    }}
+    
+    #MainMenu, footer {{
+        visibility: hidden !important;
+    }}
+    
     * {{
         font-family: 'Montserrat', sans-serif !important;
     }}
@@ -494,6 +513,15 @@ INSTITUTIONAL_STYLES = f"""
 LIGHT_THEME_STYLES = f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+    
+    /* Hide Streamlit header bar */
+    header[data-testid="stHeader"] {{
+        background: transparent !important;
+    }}
+    
+    #MainMenu, footer {{
+        visibility: hidden !important;
+    }}
     
     * {{
         font-family: 'Montserrat', sans-serif !important;
