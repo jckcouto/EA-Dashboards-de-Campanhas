@@ -23,10 +23,281 @@ st.set_page_config(
 INSTITUTIONAL_ORANGE = "#F94E03"
 INSTITUTIONAL_LIGHT = "#E0E0DA"
 INSTITUTIONAL_ORANGE_LIGHT = "#FB7B3D"
+LOGO_PATH = "attached_assets/ID_VISUAL_-_CIRCLE_-_ESCOLA_DE_AUTOMACAO_(15)_1769114404584.png"
+
+SELECTOR_STYLES = f"""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+    
+    * {{
+        font-family: 'Montserrat', sans-serif !important;
+    }}
+    
+    .stApp {{
+        background: linear-gradient(135deg, #0a0f1a 0%, #0d1321 25%, #111827 50%, #0d1321 75%, #0a0f1a 100%);
+        background-attachment: fixed;
+    }}
+    
+    .stApp::before {{
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(ellipse at 20% 20%, rgba(249, 78, 3, 0.08) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 80%, rgba(251, 123, 61, 0.05) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.02) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+    }}
+    
+    .hero-section {{
+        text-align: center;
+        padding: 3rem 2rem 2rem 2rem;
+        position: relative;
+    }}
+    
+    .hero-logo {{
+        margin-bottom: 1.5rem;
+    }}
+    
+    .hero-logo img {{
+        height: 80px;
+        filter: drop-shadow(0 4px 20px rgba(249, 78, 3, 0.3));
+        transition: all 0.4s ease;
+    }}
+    
+    .hero-logo img:hover {{
+        transform: scale(1.05);
+        filter: drop-shadow(0 8px 30px rgba(249, 78, 3, 0.5));
+    }}
+    
+    .hero-title {{
+        font-size: 2.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #FFFFFF 0%, {INSTITUTIONAL_LIGHT} 50%, #FFFFFF 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+    }}
+    
+    .hero-subtitle {{
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 400;
+        letter-spacing: 0.05em;
+    }}
+    
+    .campaigns-container {{
+        padding: 2rem;
+    }}
+    
+    .section-title {{
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }}
+    
+    .section-title h2 {{
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9) !important;
+        position: relative;
+        display: inline-block;
+    }}
+    
+    .section-title h2::after {{
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, {INSTITUTIONAL_ORANGE}, {INSTITUTIONAL_ORANGE_LIGHT});
+        border-radius: 2px;
+    }}
+    
+    .campaign-card {{
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 2.5rem 2rem;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }}
+    
+    .campaign-card::before {{
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, {INSTITUTIONAL_ORANGE}, {INSTITUTIONAL_ORANGE_LIGHT});
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }}
+    
+    .campaign-card:hover {{
+        transform: translateY(-8px);
+        border-color: rgba(249, 78, 3, 0.3);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            0 0 60px rgba(249, 78, 3, 0.15);
+    }}
+    
+    .campaign-card:hover::before {{
+        opacity: 1;
+    }}
+    
+    .campaign-icon {{
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }}
+    
+    .campaign-name {{
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #FFFFFF;
+        margin-bottom: 0.5rem;
+    }}
+    
+    .campaign-period {{
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 1.5rem;
+    }}
+    
+    .campaign-status {{
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }}
+    
+    .status-active {{
+        background: rgba(16, 185, 129, 0.15);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }}
+    
+    .status-upcoming {{
+        background: rgba(249, 78, 3, 0.15);
+        color: {INSTITUTIONAL_ORANGE};
+        border: 1px solid rgba(249, 78, 3, 0.3);
+    }}
+    
+    .status-ended {{
+        background: rgba(107, 114, 128, 0.15);
+        color: #9CA3AF;
+        border: 1px solid rgba(107, 114, 128, 0.3);
+    }}
+    
+    .integrations-section {{
+        margin-top: 3rem;
+        padding: 2rem;
+    }}
+    
+    .integrations-grid {{
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        max-width: 1000px;
+        margin: 0 auto;
+    }}
+    
+    .integration-card {{
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 1.2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }}
+    
+    .integration-card:hover {{
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }}
+    
+    .integration-name {{
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 0.5rem;
+    }}
+    
+    .integration-status {{
+        font-size: 0.75rem;
+        font-weight: 500;
+    }}
+    
+    .integration-connected {{
+        color: #10B981;
+    }}
+    
+    .integration-disconnected {{
+        color: #6B7280;
+    }}
+    
+    .footer-info {{
+        text-align: center;
+        padding: 2rem;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.8rem;
+    }}
+    
+    .stButton > button {{
+        background: linear-gradient(135deg, {INSTITUTIONAL_ORANGE} 0%, {INSTITUTIONAL_ORANGE_LIGHT} 100%);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 1rem 2.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(249, 78, 3, 0.3);
+    }}
+    
+    .stButton > button:hover {{
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(249, 78, 3, 0.4);
+    }}
+    
+    div[data-testid="stMetricValue"] {{
+        font-size: 2rem;
+        font-weight: 700;
+        color: {INSTITUTIONAL_ORANGE};
+    }}
+    
+    h1, h2, h3, h4, h5, h6 {{
+        color: white !important;
+    }}
+    
+    p, span, label {{
+        color: rgba(255, 255, 255, 0.9);
+    }}
+</style>
+"""
 
 INSTITUTIONAL_STYLES = f"""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
     
     * {{
         font-family: 'Montserrat', sans-serif !important;
@@ -42,32 +313,19 @@ INSTITUTIONAL_STYLES = f"""
         border-radius: 20px;
         margin-bottom: 2rem;
         text-align: center;
+        box-shadow: 0 10px 40px rgba(249, 78, 3, 0.3);
     }}
     
     .main-header h1 {{
         color: white;
         font-weight: 700;
         margin: 0;
-        font-size: 2.5rem;
+        font-size: 2rem;
     }}
     
     .main-header p {{
         color: rgba(255,255,255,0.9);
         margin: 0.5rem 0 0 0;
-    }}
-    
-    .campaign-selector {{
-        background: {INSTITUTIONAL_LIGHT};
-        padding: 3rem 2rem;
-        border-radius: 24px;
-        text-align: center;
-        margin: 2rem 0;
-    }}
-    
-    .campaign-selector h2 {{
-        color: #1A1A1A;
-        font-weight: 700;
-        margin-bottom: 2rem;
     }}
     
     .glass-card {{
@@ -147,22 +405,6 @@ INSTITUTIONAL_STYLES = f"""
     
     .element-container {{
         color: white;
-    }}
-    
-    .data-table {{
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        padding: 1rem;
-    }}
-    
-    .status-connected {{
-        color: #10B981;
-        font-weight: 600;
-    }}
-    
-    .status-disconnected {{
-        color: #EF4444;
-        font-weight: 600;
     }}
 </style>
 """
@@ -281,75 +523,111 @@ def check_secrets_status():
 def format_currency(value):
     return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
+def get_campaign_status(campaign):
+    now = datetime.now(BRT)
+    if now < campaign['period_start']:
+        return "upcoming", "Em breve"
+    elif now > campaign['period_end']:
+        return "ended", "Encerrada"
+    else:
+        return "active", "Ativa"
+
 def render_campaign_selector():
-    st.markdown(INSTITUTIONAL_STYLES, unsafe_allow_html=True)
+    st.markdown(SELECTOR_STYLES, unsafe_allow_html=True)
     
-    st.markdown("""
-        <div class="main-header">
-            <h1>Dashboard Multi-Campanhas</h1>
-            <p>Escola de Automação e I.A</p>
+    import base64
+    
+    try:
+        with open(LOGO_PATH, "rb") as f:
+            logo_data = base64.b64encode(f.read()).decode()
+        logo_html = f'<img src="data:image/png;base64,{logo_data}" alt="Escola de Automação e I.A">'
+    except:
+        logo_html = ''
+    
+    st.markdown(f"""
+        <div class="hero-section">
+            <div class="hero-logo">
+                {logo_html}
+            </div>
+            <div class="hero-title">Dashboard Multi-Campanhas</div>
+            <div class="hero-subtitle">Acompanhe suas campanhas em tempo real</div>
         </div>
     """, unsafe_allow_html=True)
     
     st.markdown("""
-        <div class="campaign-selector">
+        <div class="section-title">
             <h2>Selecione uma Campanha</h2>
         </div>
     """, unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns([1, 2, 1])
+    secrets = check_secrets_status()
+    
+    col1, col2, col3 = st.columns([0.5, 3, 0.5])
     
     with col2:
-        cols = st.columns(len(CAMPAIGNS))
+        campaign_cols = st.columns(len(CAMPAIGNS))
         
         for idx, (campaign_id, campaign) in enumerate(CAMPAIGNS.items()):
-            with cols[idx]:
+            with campaign_cols[idx]:
+                status_key, status_text = get_campaign_status(campaign)
+                period_start = campaign['period_start'].strftime('%d/%m/%Y')
+                period_end = campaign['period_end'].strftime('%d/%m/%Y')
+                
+                icon = "🛒" if campaign_id == "bf25" else "🎓"
+                
+                st.markdown(f"""
+                    <div class="campaign-card">
+                        <span class="campaign-icon">{icon}</span>
+                        <div class="campaign-name">{campaign['name']}</div>
+                        <div class="campaign-period">{period_start} - {period_end}</div>
+                        <span class="campaign-status status-{status_key}">{status_text}</span>
+                    </div>
+                """, unsafe_allow_html=True)
+                
                 if st.button(
-                    f"{campaign['name']}",
+                    f"Acessar {campaign['name'].split()[0]}",
                     key=f"btn_{campaign_id}",
                     use_container_width=True
                 ):
                     st.session_state.selected_campaign = campaign_id
                     st.rerun()
-                
-                period_start = campaign['period_start'].strftime('%d/%m/%Y')
-                period_end = campaign['period_end'].strftime('%d/%m/%Y')
-                st.caption(f"{period_start} - {period_end}")
     
-    st.markdown("---")
-    st.subheader("Status das Integrações")
+    st.markdown("<br><br>", unsafe_allow_html=True)
     
-    secrets = check_secrets_status()
+    st.markdown("""
+        <div class="section-title">
+            <h2>Integrações</h2>
+        </div>
+    """, unsafe_allow_html=True)
     
-    col1, col2, col3, col4, col5 = st.columns(5)
+    integrations = [
+        ("Hotmart API", secrets['HOTMART_BASIC_TOKEN'], "💳"),
+        ("ManyChat", secrets['MANYCHAT_API_TOKEN'], "💬"),
+        ("Meta Ads", secrets['META_ACCESS_TOKEN'] and secrets['META_AD_ACCOUNT_ID'], "📱"),
+        ("Google Sheets", secrets['GOOGLE_SPREADSHEET_ID'], "📊"),
+    ]
     
-    with col1:
-        status = "Conectado" if secrets['HOTMART_BASIC_TOKEN'] else "Não configurado"
-        color = "#10B981" if secrets['HOTMART_BASIC_TOKEN'] else "#EF4444"
-        st.markdown(f"**Hotmart API**")
-        st.markdown(f"<span style='color: {color}'>{status}</span>", unsafe_allow_html=True)
+    integration_html = '<div class="integrations-grid">'
+    for name, connected, icon in integrations:
+        status_class = "integration-connected" if connected else "integration-disconnected"
+        status_text = "Conectado" if connected else "Não configurado"
+        status_icon = "●" if connected else "○"
+        integration_html += f'''
+            <div class="integration-card">
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">{icon}</div>
+                <div class="integration-name">{name}</div>
+                <div class="integration-status {status_class}">{status_icon} {status_text}</div>
+            </div>
+        '''
+    integration_html += '</div>'
     
-    with col2:
-        status = "Conectado" if secrets['MANYCHAT_API_TOKEN'] else "Não configurado"
-        color = "#10B981" if secrets['MANYCHAT_API_TOKEN'] else "#EF4444"
-        st.markdown(f"**ManyChat API**")
-        st.markdown(f"<span style='color: {color}'>{status}</span>", unsafe_allow_html=True)
+    st.markdown(integration_html, unsafe_allow_html=True)
     
-    with col3:
-        status = "Conectado" if secrets['META_ACCESS_TOKEN'] and secrets['META_AD_ACCOUNT_ID'] else "Não configurado"
-        color = "#10B981" if secrets['META_ACCESS_TOKEN'] and secrets['META_AD_ACCOUNT_ID'] else "#EF4444"
-        st.markdown(f"**Meta Ads API**")
-        st.markdown(f"<span style='color: {color}'>{status}</span>", unsafe_allow_html=True)
-    
-    with col4:
-        status = "Conectado" if secrets['GOOGLE_SPREADSHEET_ID'] else "Não configurado"
-        color = "#10B981" if secrets['GOOGLE_SPREADSHEET_ID'] else "#EF4444"
-        st.markdown(f"**Google Sheets**")
-        st.markdown(f"<span style='color: {color}'>{status}</span>", unsafe_allow_html=True)
-    
-    with col5:
-        st.markdown(f"**Hora Atual (BRT)**")
-        st.markdown(f"{datetime.now(BRT).strftime('%d/%m/%Y %H:%M')}")
+    st.markdown(f"""
+        <div class="footer-info">
+            <p>Escola de Automação e I.A &bull; {datetime.now(BRT).strftime('%d/%m/%Y %H:%M')} BRT</p>
+        </div>
+    """, unsafe_allow_html=True)
 
 def render_bf25_dashboard():
     st.markdown(LIGHT_THEME_STYLES, unsafe_allow_html=True)
