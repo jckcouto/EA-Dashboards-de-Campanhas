@@ -354,6 +354,41 @@ INSTITUTIONAL_STYLES = f"""
         background: linear-gradient(135deg, #0B1437 0%, #1A1F37 50%, #111C44 100%);
     }}
     
+    .campaign-header {{
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        background: linear-gradient(135deg, {INSTITUTIONAL_ORANGE} 0%, {INSTITUTIONAL_ORANGE_LIGHT} 100%);
+        padding: 1.5rem 2rem;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 10px 40px rgba(249, 78, 3, 0.3);
+    }}
+    
+    .header-logo {{
+        height: 70px;
+        width: auto;
+        object-fit: contain;
+        flex-shrink: 0;
+    }}
+    
+    .header-text {{
+        flex: 1;
+    }}
+    
+    .header-text h1 {{
+        color: white !important;
+        font-weight: 700;
+        margin: 0 !important;
+        font-size: 1.8rem;
+    }}
+    
+    .header-text p {{
+        color: rgba(255,255,255,0.9);
+        margin: 0.3rem 0 0 0;
+        font-size: 0.95rem;
+    }}
+    
     .main-header {{
         background: linear-gradient(135deg, {INSTITUTIONAL_ORANGE} 0%, {INSTITUTIONAL_ORANGE_LIGHT} 100%);
         padding: 2rem;
@@ -474,6 +509,41 @@ LIGHT_THEME_STYLES = f"""
     
     p, span, label {{
         color: #4A5568;
+    }}
+    
+    .campaign-header {{
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        background: linear-gradient(135deg, {INSTITUTIONAL_ORANGE} 0%, {INSTITUTIONAL_ORANGE_LIGHT} 100%);
+        padding: 1.5rem 2rem;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 30px rgba(249, 78, 3, 0.25);
+    }}
+    
+    .header-logo {{
+        height: 70px;
+        width: auto;
+        object-fit: contain;
+        flex-shrink: 0;
+    }}
+    
+    .header-text {{
+        flex: 1;
+    }}
+    
+    .header-text h1 {{
+        color: white !important;
+        font-weight: 700;
+        margin: 0 !important;
+        font-size: 1.8rem;
+    }}
+    
+    .header-text p {{
+        color: rgba(255,255,255,0.9);
+        margin: 0.3rem 0 0 0;
+        font-size: 0.95rem;
     }}
     
     .main-header {{
@@ -953,24 +1023,26 @@ def render_bf25_dashboard():
     config = get_campaign_config('bf25')
     secrets = check_secrets_status()
     
-    col1, col2 = st.columns([0.1, 0.9])
-    with col1:
-        if st.button("Voltar", key="back_bf25"):
-            st.session_state.selected_campaign = None
-            st.rerun()
-    
     bf_logo_path = "attached_assets/[ID_VISUAL]_1125_-_BF_-_Artes_Gerais_EA_1769115563727.png"
     
-    header_col1, header_col2 = st.columns([1, 4])
-    with header_col1:
-        st.image(bf_logo_path, width=120)
-    with header_col2:
-        st.markdown(f"""
-            <div class="main-header" style="text-align: left; padding: 1rem 0;">
-                <h1 style="margin: 0;">{config['name']}</h1>
-                <p style="margin: 0.5rem 0 0 0;">Dashboard de Acompanhamento</p>
+    # Unified header with back button
+    if st.button("← Voltar", key="back_bf25"):
+        st.session_state.selected_campaign = None
+        st.rerun()
+    
+    import base64
+    with open(bf_logo_path, "rb") as f:
+        logo_b64 = base64.b64encode(f.read()).decode()
+    
+    st.markdown(f"""
+        <div class="campaign-header">
+            <img src="data:image/png;base64,{logo_b64}" class="header-logo" />
+            <div class="header-text">
+                <h1>{config['name']}</h1>
+                <p>Dashboard de Acompanhamento</p>
             </div>
-        """, unsafe_allow_html=True)
+        </div>
+    """, unsafe_allow_html=True)
     
     tabs = st.tabs(config['tabs'])
     
@@ -1304,11 +1376,10 @@ def render_imersao_dashboard():
     config = get_campaign_config('imersao0126')
     secrets = check_secrets_status()
     
-    col1, col2 = st.columns([0.1, 0.9])
-    with col1:
-        if st.button("Voltar", key="back_imersao"):
-            st.session_state.selected_campaign = None
-            st.rerun()
+    # Unified header with back button
+    if st.button("← Voltar", key="back_imersao"):
+        st.session_state.selected_campaign = None
+        st.rerun()
     
     imersao_logo = None
     for f in os.listdir("attached_assets"):
@@ -1316,24 +1387,22 @@ def render_imersao_dashboard():
             imersao_logo = f"attached_assets/{f}"
             break
     
+    import base64
+    logo_html = ""
     if imersao_logo:
-        header_col1, header_col2 = st.columns([1, 4])
-        with header_col1:
-            st.image(imersao_logo, width=120)
-        with header_col2:
-            st.markdown(f"""
-                <div class="main-header" style="text-align: left; padding: 1rem 0;">
-                    <h1 style="margin: 0;">{config['name']}</h1>
-                    <p style="margin: 0.5rem 0 0 0;">Dashboard de Acompanhamento</p>
-                </div>
-            """, unsafe_allow_html=True)
-    else:
-        st.markdown(f"""
-            <div class="main-header">
+        with open(imersao_logo, "rb") as f:
+            logo_b64 = base64.b64encode(f.read()).decode()
+        logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="header-logo" />'
+    
+    st.markdown(f"""
+        <div class="campaign-header">
+            {logo_html}
+            <div class="header-text">
                 <h1>{config['name']}</h1>
                 <p>Dashboard de Acompanhamento</p>
             </div>
-        """, unsafe_allow_html=True)
+        </div>
+    """, unsafe_allow_html=True)
     
     tabs = st.tabs(config['tabs'])
     
