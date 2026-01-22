@@ -638,21 +638,22 @@ def render_campaign_selector():
         ("Google Sheets", secrets['GOOGLE_SPREADSHEET_ID'], "📊"),
     ]
     
-    integration_html = '<div class="integrations-grid">'
-    for name, connected, icon in integrations:
-        status_class = "integration-connected" if connected else "integration-disconnected"
-        status_text = "Conectado" if connected else "Não configurado"
-        status_icon = "●" if connected else "○"
-        integration_html += f'''
-            <div class="integration-card">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">{icon}</div>
-                <div class="integration-name">{name}</div>
-                <div class="integration-status {status_class}">{status_icon} {status_text}</div>
-            </div>
-        '''
-    integration_html += '</div>'
+    col_spacer1, col_int, col_spacer2 = st.columns([1, 4, 1])
     
-    st.markdown(integration_html, unsafe_allow_html=True)
+    with col_int:
+        int_cols = st.columns(4)
+        for idx, (name, connected, icon) in enumerate(integrations):
+            with int_cols[idx]:
+                status_class = "integration-connected" if connected else "integration-disconnected"
+                status_text = "Conectado" if connected else "Não configurado"
+                status_icon = "●" if connected else "○"
+                st.markdown(f"""
+                    <div class="integration-card">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">{icon}</div>
+                        <div class="integration-name">{name}</div>
+                        <div class="integration-status {status_class}">{status_icon} {status_text}</div>
+                    </div>
+                """, unsafe_allow_html=True)
     
     st.markdown(f"""
         <div class="footer-info">
