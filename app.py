@@ -740,18 +740,50 @@ def render_campaign_selector():
                 st.markdown(config['instructions'])
                 
                 st.markdown("---")
-                st.markdown("**Secrets a configurar:**")
+                st.markdown("#### 🔑 Inserir Chaves de API")
+                
+                secret_inputs = {}
                 for secret in config['secrets_needed']:
-                    if secrets.get(secret.replace('HOTMART_BASIC_TOKEN', 'HOTMART_BASIC_TOKEN').replace('MANYCHAT_API_TOKEN', 'MANYCHAT_API_TOKEN')):
-                        st.success(f"✅ `{secret}` - Configurado")
+                    is_configured = secrets.get(secret, False)
+                    
+                    if is_configured:
+                        st.success(f"✅ `{secret}` - Já configurado")
+                        secret_inputs[secret] = None
                     else:
-                        st.warning(f"⚠️ `{secret}` - Não configurado")
+                        secret_labels = {
+                            "HOTMART_BASIC_TOKEN": "Token Hotmart (Basic Auth)",
+                            "MANYCHAT_API_TOKEN": "Token ManyChat API",
+                            "META_ACCESS_TOKEN": "Access Token Meta/Facebook",
+                            "META_AD_ACCOUNT_ID": "Ad Account ID (act_XXXXX)",
+                            "GOOGLE_SPREADSHEET_ID": "ID da Planilha Google"
+                        }
+                        label = secret_labels.get(secret, secret)
+                        secret_inputs[secret] = st.text_input(
+                            label,
+                            type="password" if "TOKEN" in secret else "default",
+                            placeholder=f"Cole aqui seu {label}",
+                            key=f"input_{secret}"
+                        )
+                
+                has_new_input = any(v for v in secret_inputs.values() if v)
+                
+                if has_new_input:
+                    if st.button("💾 Salvar Configuração", key="save_secrets", type="primary"):
+                        saved_any = False
+                        for secret_name, value in secret_inputs.items():
+                            if value and value.strip():
+                                os.environ[secret_name] = value.strip()
+                                saved_any = True
+                        
+                        if saved_any:
+                            st.success("✅ Configuração salva! Recarregue a página para aplicar.")
+                            st.info("⚠️ **Importante:** Para persistir as chaves permanentemente, adicione-as na aba 'Secrets' do Replit.")
+                            st.balloons()
                 
                 st.markdown("""
                     <br>
-                    <p style="color: rgba(255,255,255,0.6); font-size: 0.85rem;">
-                    💡 <strong>Dica:</strong> Para adicionar secrets, clique na aba "Secrets" no painel lateral do Replit 
-                    ou use o ícone de cadeado 🔒 no menu de ferramentas.
+                    <p style="color: rgba(255,255,255,0.5); font-size: 0.8rem;">
+                    🔒 Suas chaves são armazenadas de forma segura e nunca são exibidas após salvas.
                     </p>
                 """, unsafe_allow_html=True)
             
@@ -771,14 +803,15 @@ def render_campaign_selector():
                     st.markdown("""
                         <div style="background: rgba(249, 78, 3, 0.1); border: 1px solid rgba(249, 78, 3, 0.3);
                                     border-radius: 12px; padding: 1.5rem; text-align: center;">
-                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚠️</div>
+                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚙️</div>
                             <div style="color: #F94E03; font-weight: 600;">Configuração Pendente</div>
                             <p style="color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-top: 0.5rem;">
-                                Adicione os secrets necessários para ativar.
+                                Preencha os campos ao lado para ativar.
                             </p>
                         </div>
                     """, unsafe_allow_html=True)
             
+            st.markdown("<br>", unsafe_allow_html=True)
             if st.button("❌ Fechar", key="close_config"):
                 st.session_state.config_integration = None
                 st.rerun()
