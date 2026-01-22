@@ -1,0 +1,562 @@
+# DOCUMENTAÇÃO COMPLETA - Dashboard Multi-Campanhas
+## Escola de Automação e I.A
+
+---
+
+## 1. VISÃO GERAL
+
+**Nome do Projeto**: Dashboard Multi-Campanhas
+**URL de Produção**: https://dash.escoladeautomacao.com.br
+**Framework**: Streamlit (Python)
+**Porta**: 5000
+
+---
+
+## 2. CAMPANHAS DISPONÍVEIS
+
+### 2.1 BLACK FRIDAY 2025 (bf25)
+
+| Propriedade | Valor |
+|-------------|-------|
+| ID | `bf25` |
+| Nome Display | BLACK FRIDAY 2025 |
+| Período | 06/11/2025 - 08/12/2025 |
+| Horário Início | 19:00 BRT (horário de Brasília) |
+
+**Cores**:
+- Primária: `#4A90E2` (Azul)
+- Secundária: `#FFD166` (Amarelo)
+
+**Produto Hotmart**:
+| Campo | Valor |
+|-------|-------|
+| Product ID | `6398418` |
+| Nome | Escola de Automação - Acesso Vitalício |
+
+**Abas Disponíveis** (11 abas):
+1. VISÃO DA CAPTAÇÃO
+2. VENDAS
+3. COMPARAR
+4. ORIGEM DOS LEADS
+5. PESQUISA
+6. INVESTIMENTOS EXTRAS
+7. META ADS
+8. API OFICIAL DO ZAPZAP
+9. DADOS
+10. METAS
+11. PLANEJAMENTO 2025
+
+**Integrações Usadas**:
+- Google Sheets ✅
+- Hotmart API ✅
+- ManyChat API ✅
+- Meta Ads API ✅
+
+---
+
+### 2.2 IMERSÃO 01/26 (imersao0126)
+
+| Propriedade | Valor |
+|-------------|-------|
+| ID | `imersao0126` |
+| Nome Display | IMERSÃO 01/26 |
+| Período | 07/01/2026 - 31/01/2026 |
+
+**Cores**:
+- Primária: `#F94E03` (Laranja Institucional)
+- Secundária: `#FB7B3D` (Laranja Claro)
+
+**Produtos Hotmart**:
+| Campo | Product ID | Nome |
+|-------|------------|------|
+| Ingresso | `6926419` | Ingresso Imersão |
+| Orderbump | `6926479` | Orderbump Gravação |
+
+**Abas Disponíveis** (4 abas):
+1. VENDAS
+2. REEMBOLSOS
+3. PESQUISA
+4. MONITORAMENTO GRUPOS
+
+**Integrações Usadas**:
+- Google Sheets ✅
+- Hotmart API ✅
+- ManyChat API ❌ (não usa)
+- Meta Ads API ❌ (não usa)
+
+---
+
+## 3. SECRETS E VARIÁVEIS DE AMBIENTE
+
+### 3.1 Secrets Necessários
+
+| Secret | Descrição | Usado Por |
+|--------|-----------|-----------|
+| `GOOGLE_SPREADSHEET_ID` | ID da planilha do Google Sheets (Black Friday) | Google Sheets |
+| `HOTMART_CLIENT_ID` | Client ID da aplicação Hotmart | Hotmart API |
+| `HOTMART_CLIENT_SECRET` | Client Secret da aplicação Hotmart | Hotmart API |
+| `HOTMART_BASIC_TOKEN` | Token Base64(client_id:client_secret) | Hotmart OAuth |
+| `MANYCHAT_API_TOKEN` | Token de API do ManyChat | ManyChat API |
+| `META_ACCESS_TOKEN` | Access Token do Facebook/Meta | Meta Ads API |
+| `META_AD_ACCOUNT_ID` | ID da conta de anúncios (sem prefixo act_) | Meta Ads API |
+| `SESSION_SECRET` | Secret para sessões do app | Streamlit |
+
+### 3.2 Variáveis de Ambiente Automáticas (Replit)
+
+| Variável | Descrição |
+|----------|-----------|
+| `REPLIT_CONNECTORS_HOSTNAME` | Hostname para connectors Replit |
+| `REPL_IDENTITY` | Token de identidade (desenvolvimento) |
+| `WEB_REPL_RENEWAL` | Token de identidade (produção/deployment) |
+
+---
+
+## 4. GOOGLE SHEETS
+
+### 4.1 Planilha Black Friday 2025
+- **Spreadsheet ID**: Obtido via `GOOGLE_SPREADSHEET_ID` (secret)
+- **Conexão**: Replit Connectors (OAuth2 automático)
+
+**Abas da Planilha**:
+| Nome da Aba | Range | Descrição |
+|-------------|-------|-----------|
+| `Leads [EA Alunos]` | A:Z | Leads de alunos existentes |
+| `Leads [Geral]` | A:Z | Leads do público geral |
+| `Pesquisa [EA Alunos]` | A:Z | Respostas de pesquisa - Alunos |
+| `Pesquisa [Geral]` | A:Z | Respostas de pesquisa - Geral |
+| `Entrou no Grupo [EA Alunos]` | A:Z | Monitoramento grupos - Alunos |
+| `Entrou no Grupo [Geral]` | A:Z | Monitoramento grupos - Geral |
+
+### 4.2 Planilha IMERSÃO 01/26
+- **Spreadsheet ID**: `1KwL7xYFSp-M_tqnHvMfBcDwiJqcoQy8FtPefUSefdNk` (hardcoded)
+
+**Abas da Planilha**:
+| Nome da Aba | Range | Descrição |
+|-------------|-------|-----------|
+| `VENDAS` | A:Z | Registro de vendas |
+| `REEMBOLSOS` | A:Z | Registro de reembolsos |
+| `PESQUISA` | A:Z | Respostas de pesquisa |
+| `MONITORAMENTO GRUPOS` | A:Z | Monitoramento de grupos |
+
+---
+
+## 5. HOTMART API
+
+### 5.1 Autenticação OAuth2
+
+**URLs**:
+- Auth URL: `https://api-sec-vlc.hotmart.com/security/oauth/token`
+- API Base: `https://developers.hotmart.com/payments/api/v1`
+
+**Fluxo de Autenticação**:
+```
+POST https://api-sec-vlc.hotmart.com/security/oauth/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic {HOTMART_BASIC_TOKEN}
+
+grant_type=client_credentials
+```
+
+**Resposta**:
+```json
+{
+  "access_token": "xxx",
+  "token_type": "Bearer",
+  "expires_in": 3600
+}
+```
+
+### 5.2 Endpoints Usados
+
+**Sales History**:
+```
+GET https://developers.hotmart.com/payments/api/v1/sales/history
+Authorization: Bearer {access_token}
+
+Query Params:
+- product_id: ID do produto
+- start_date: Data início (milissegundos epoch)
+- end_date: Data fim (milissegundos epoch)
+- transaction_status: Status (APPROVED, REFUNDED, etc)
+- max_results: Máximo por página (500)
+- page_token: Token de paginação
+```
+
+### 5.3 Status de Transação
+
+**Status de Vendas Aprovadas**:
+- `APPROVED` - Aprovada
+- `COMPLETE` - Completa
+
+**Status de Reembolso (contam como reembolso)**:
+- `REFUNDED` - Reembolsada
+- `PARTIALLY_REFUNDED` - Parcialmente reembolsada
+- `CHARGEBACK` - Contestação de cartão
+- `PROTESTED` - Protestada
+- `UNDER_ANALISYS` - Em análise
+
+**Status Problemáticos (NÃO são reembolsos)**:
+- `CANCELLED` - Cancelada (pagamento falhou)
+- `EXPIRED` - Expirada
+- `PRINTED_BILLET` - Boleto gerado
+- `WAITING_PAYMENT` - Aguardando pagamento
+
+### 5.4 Limitações Importantes
+
+⚠️ **Limite de 587 registros por request** - API para de retornar após ~587 registros mesmo com paginação.
+
+**Solução implementada**: Subdivisão por dia/semana
+- Fazer requests separados para cada dia
+- Usar `page_token` para paginação dentro de cada período
+- Deduplicar por `purchase.transaction`
+
+### 5.5 Campos Importantes
+
+```python
+# Identificador único de transação
+sale['purchase']['transaction']
+
+# Valor da venda (usar este para cálculos)
+sale['purchase']['hotmart_fee']['base']
+
+# Email do comprador
+sale['buyer']['email']
+
+# Data da compra (milissegundos)
+sale['purchase']['order_date']
+
+# Código da oferta
+sale['purchase']['offer']['code']
+```
+
+---
+
+## 6. MANYCHAT API
+
+### 6.1 Configuração
+
+**Base URL**: `https://api.manychat.com/fb`
+
+**Headers**:
+```
+Authorization: Bearer {MANYCHAT_API_TOKEN}
+Content-Type: application/json
+```
+
+### 6.2 Endpoints Usados
+
+| Endpoint | Descrição |
+|----------|-----------|
+| `/page/getStats` | Estatísticas gerais da página |
+| `/page/getTags` | Lista todas as tags |
+| `/subscribers/findByTag` | Busca subscribers por tag |
+
+### 6.3 Tags Black Friday 2025
+
+| Chave | Nome da Tag |
+|-------|-------------|
+| alunos_boas_vindas_recebeu | `[BF25]-LEAD-ALUNO-BOASVINDAS-RECEBEU` |
+| alunos_boas_vindas_clicou | `[BF25]-LEAD-ALUNO-BOASVINDAS-CLICOU` |
+| geral_boas_vindas_recebeu | `[BF25]-LEAD-GERAL-BOASVINDAS-RECEBEU` |
+| geral_boas_vindas_clicou | `[BF25]-LEAD-GERAL-BOASVINDAS-CLICOU` |
+| geral_fluxo_instagram | `BF25-RECEBEU-FLUXO-GERAL` |
+| geral_clicou_link_lp | `BF25-CLICOU-LINK-LP-CADASTRO` |
+| geral_deixou_telefone | `BF25-DEIXOU-TELEFONE-CADASTRO` |
+| alunos_recebeu_convite_api | `BF25-ALUNOS-RECEBEU-CONVITE-1-API` |
+| alunos_interagiu_convite | `BF25-INTERAGIU-DISPARO-API-CONVITE-ALUNOS` |
+| geral_recebeu_convite_api | `BF25-GERAL-RECEBEU-CONVITE-1-API` |
+| geral_interagiu_convite | `BF25-INTERAGIU-DISPARO-API-CONVITE-GERAL` |
+
+---
+
+## 7. META ADS API
+
+### 7.1 Configuração
+
+**Base URL**: `https://graph.facebook.com/v22.0`
+
+**Autenticação**: Access Token como query param
+```
+?access_token={META_ACCESS_TOKEN}
+```
+
+### 7.2 Endpoints Usados
+
+| Endpoint | Descrição |
+|----------|-----------|
+| `act_{id}` | Informações da conta |
+| `act_{id}/insights` | Métricas agregadas |
+| `act_{id}/campaigns` | Lista campanhas |
+| `act_{id}/adsets` | Conjuntos de anúncios |
+| `act_{id}/ads` | Anúncios individuais |
+
+### 7.3 Filtros de Campanha
+
+**Black Friday 2025**:
+- Filtro: `campaign.name CONTAIN "BF25"`
+- Alunos: Campanhas com "CLIENTES" no nome
+- Geral: Campanhas com "QUENTE" no nome
+- Excluir: Campanhas com "ENGAJAMENTO"
+
+**IMERSÃO 01/26**:
+- Filtro: `campaign.name CONTAIN "WSIA_JAN26"`
+
+### 7.4 Campos Importantes
+
+```
+impressions - Impressões
+clicks - Cliques totais
+inline_link_clicks - Cliques no link
+spend - Gasto (em R$)
+actions - Array de ações (leads, purchases, etc)
+inline_link_click_ctr - CTR
+cpc - Custo por clique
+cpm - Custo por mil impressões
+```
+
+---
+
+## 8. ESTRUTURA DE ARQUIVOS
+
+```
+/
+├── app.py                          # Arquivo principal (8400+ linhas)
+│
+├── campaigns/
+│   ├── __init__.py
+│   ├── config.py                   # Configurações das campanhas
+│   └── imersao_0126.py             # Módulo da campanha IMERSÃO
+│
+├── server/
+│   ├── google_sheet_client.py      # Cliente Google Sheets
+│   ├── hotmart_client.py           # Cliente Hotmart API
+│   ├── manychat_client.py          # Cliente ManyChat API
+│   └── meta_ads_client.py          # Cliente Meta Ads API
+│
+├── utils/
+│   ├── data_processor.py           # Processamento de dados
+│   ├── chart_helpers.py            # Helpers para gráficos Plotly
+│   ├── report_generator.py         # Gerador de relatórios PDF
+│   └── correlation_analyzer.py     # Análise de correlação
+│
+├── .streamlit/
+│   └── config.toml                 # Configurações do Streamlit
+│
+├── attached_assets/                # Imagens e logos
+│   ├── *CIRCLE*ESCOLA*.png         # Logo da escola (selector)
+│   ├── *EA (1)_*.png               # Logo header BF
+│   └── *EA_*.png                   # Foto Thales
+│
+└── replit.md                       # Documentação do projeto
+```
+
+---
+
+## 9. DESIGN E ESTILOS
+
+### 9.1 Seletor de Campanhas
+
+**Background**: Gradiente laranja
+```css
+background: linear-gradient(135deg, #F97316 0%, #FB923C 30%, #FDBA74 60%, #FED7AA 100%);
+```
+
+**Botões**: Gradiente roxo com glow
+```css
+background: linear-gradient(135deg, #7C3AED 0%, #6366F1 50%, #8B5CF6 100%);
+box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+```
+
+**Fonte**: Plus Jakarta Sans
+
+### 9.2 Dashboard Black Friday
+
+**Tema**: Claro com azul/amarelo
+**Fonte**: Montserrat
+
+### 9.3 Dashboard IMERSÃO (Vision UI Style)
+
+**Background**: Escuro com gradiente
+```css
+background: linear-gradient(135deg, #0B1437 0%, #1A1F37 50%, #111C44 100%);
+```
+
+**Cards**: Glassmorphism
+```css
+background: linear-gradient(127deg, rgba(6, 11, 40, 0.94) 0%, rgba(10, 14, 35, 0.69) 100%);
+backdrop-filter: blur(120px);
+border: 1.5px solid rgba(255, 255, 255, 0.1);
+border-radius: 20px;
+```
+
+**Cor de destaque**: `#F94E03` (Laranja institucional)
+
+---
+
+## 10. CONFIGURAÇÃO STREAMLIT
+
+**.streamlit/config.toml**:
+```toml
+[server]
+headless = true
+address = "0.0.0.0"
+port = 5000
+```
+
+**Workflow Command**:
+```bash
+streamlit run app.py --server.port 5000
+```
+
+---
+
+## 11. BIBLIOTECAS PYTHON
+
+### 11.1 Dependências Principais
+
+| Biblioteca | Uso |
+|------------|-----|
+| streamlit | Framework web |
+| pandas | Manipulação de dados |
+| numpy | Cálculos numéricos |
+| plotly | Gráficos interativos |
+| requests | HTTP requests |
+| reportlab | Geração de PDF |
+
+### 11.2 pyproject.toml
+
+```toml
+[project]
+name = "repl_nix_dashboard_campanhas"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "streamlit>=1.28.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "plotly>=5.17.0",
+    "requests>=2.31.0",
+    "reportlab>=4.0.0"
+]
+```
+
+---
+
+## 12. CACHE E PERFORMANCE
+
+### 12.1 Cache de Dados
+
+**TTL padrão**: 300 segundos (5 minutos)
+
+```python
+@st.cache_data(ttl=300, show_spinner=False)
+def get_sales_history(...):
+    ...
+```
+
+### 12.2 Session State
+
+**Chaves principais**:
+- `selected_campaign` - ID da campanha selecionada
+- `cached_data` - Dados em cache
+- `last_refresh` - Timestamp da última atualização
+
+---
+
+## 13. NOTAS TÉCNICAS IMPORTANTES
+
+### 13.1 Renderização HTML
+
+⚠️ **Tabelas complexas**: Usar `streamlit.components.v1.html()` em vez de `st.markdown()`
+- `st.markdown` trunca tabelas com muitas linhas
+- `components.html()` renderiza HTML em iframe isolado
+
+### 13.2 Conversão de Moeda
+
+**Hotmart retorna valores em centavos** para alguns campos
+- Dividir por 100 quando necessário
+- Usar `hotmart_fee.base` para valor correto em R$
+
+### 13.3 Datas
+
+**Hotmart usa milissegundos**:
+```python
+# Converter datetime para ms
+start_ms = int(datetime_obj.timestamp() * 1000)
+
+# Converter ms para datetime
+dt = datetime.fromtimestamp(ms / 1000, tz=timezone)
+```
+
+**Timezone**: Sempre usar `America/Sao_Paulo` (BRT)
+```python
+from zoneinfo import ZoneInfo
+brt = ZoneInfo('America/Sao_Paulo')
+```
+
+### 13.4 Identificação Única
+
+**Vendas Hotmart**: Usar `purchase.transaction`
+- Evita duplicatas ao fazer múltiplos requests
+
+---
+
+## 14. LINKS E RECURSOS
+
+### 14.1 URLs de API
+
+| API | URL Base |
+|-----|----------|
+| Hotmart Auth | https://api-sec-vlc.hotmart.com/security/oauth/token |
+| Hotmart API | https://developers.hotmart.com/payments/api/v1 |
+| ManyChat | https://api.manychat.com/fb |
+| Meta Ads | https://graph.facebook.com/v22.0 |
+| Google Sheets | https://sheets.googleapis.com/v4/spreadsheets |
+
+### 14.2 Documentação Oficial
+
+- Hotmart: https://developers.hotmart.com/
+- ManyChat: https://api.manychat.com/docs/
+- Meta Marketing API: https://developers.facebook.com/docs/marketing-apis
+- Google Sheets API: https://developers.google.com/sheets/api
+
+---
+
+## 15. COMO CRIAR UM NOVO APP
+
+### 15.1 Passos Básicos
+
+1. Criar novo Replit com template Python/Streamlit
+2. Copiar estrutura de pastas (`campaigns/`, `server/`, `utils/`)
+3. Configurar secrets no painel Secrets do Replit
+4. Conectar Google Sheets via Replit Connectors
+5. Criar `.streamlit/config.toml`
+6. Rodar `streamlit run app.py --server.port 5000`
+
+### 15.2 Checklist de Secrets
+
+- [ ] GOOGLE_SPREADSHEET_ID
+- [ ] HOTMART_CLIENT_ID
+- [ ] HOTMART_CLIENT_SECRET
+- [ ] HOTMART_BASIC_TOKEN
+- [ ] MANYCHAT_API_TOKEN
+- [ ] META_ACCESS_TOKEN
+- [ ] META_AD_ACCOUNT_ID
+
+### 15.3 Configurar Google Sheets
+
+1. No Replit, ir em "Tools" → "Connectors"
+2. Adicionar "Google Sheets"
+3. Autorizar com conta Google que tem acesso às planilhas
+4. O sistema gerencia tokens automaticamente
+
+---
+
+## 16. CONTATO E SUPORTE
+
+**Projeto desenvolvido para**: Escola de Automação e I.A
+**Desenvolvedor**: Thales Laray
+
+---
+
+*Documentação gerada em: Janeiro 2026*
