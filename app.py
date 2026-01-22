@@ -20,10 +20,20 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+import os
 INSTITUTIONAL_ORANGE = "#F94E03"
 INSTITUTIONAL_LIGHT = "#E0E0DA"
 INSTITUTIONAL_ORANGE_LIGHT = "#FB7B3D"
 LOGO_PATH = "attached_assets/ID_VISUAL_-_CIRCLE_-_ESCOLA_DE_AUTOMACAO_(15)_1769114404584.png"
+LOGO_BF25 = "attached_assets/[ID_VISUAL]_1125_-_BF_-_Artes_Gerais_EA_1769115563727.png"
+
+def find_imersao_logo():
+    for f in os.listdir('attached_assets'):
+        if 'PAGO' in f and '0126' in f:
+            return os.path.join('attached_assets', f)
+    return None
+
+LOGO_IMERSAO = find_imersao_logo()
 
 SELECTOR_STYLES = f"""
 <style>
@@ -163,6 +173,20 @@ SELECTOR_STYLES = f"""
         font-size: 3rem;
         margin-bottom: 1rem;
         display: block;
+    }}
+    
+    .campaign-logo {{
+        max-height: 80px;
+        max-width: 200px;
+        object-fit: contain;
+        margin-bottom: 1rem;
+        filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.3));
+        transition: all 0.3s ease;
+    }}
+    
+    .campaign-card:hover .campaign-logo {{
+        transform: scale(1.05);
+        filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.4));
     }}
     
     .campaign-name {{
@@ -573,11 +597,18 @@ def render_campaign_selector():
                 period_start = campaign['period_start'].strftime('%d/%m/%Y')
                 period_end = campaign['period_end'].strftime('%d/%m/%Y')
                 
-                icon = "🛒" if campaign_id == "bf25" else "🎓"
+                logo_path = LOGO_BF25 if campaign_id == "bf25" else LOGO_IMERSAO
+                try:
+                    with open(logo_path, "rb") as f:
+                        campaign_logo_data = base64.b64encode(f.read()).decode()
+                    campaign_logo_html = f'<img class="campaign-logo" src="data:image/png;base64,{campaign_logo_data}" alt="{campaign["name"]}">'
+                except:
+                    icon = "🛒" if campaign_id == "bf25" else "🎓"
+                    campaign_logo_html = f'<span class="campaign-icon">{icon}</span>'
                 
                 st.markdown(f"""
                     <div class="campaign-card">
-                        <span class="campaign-icon">{icon}</span>
+                        {campaign_logo_html}
                         <div class="campaign-name">{campaign['name']}</div>
                         <div class="campaign-period">{period_start} - {period_end}</div>
                         <span class="campaign-status status-{status_key}">{status_text}</span>
