@@ -942,12 +942,18 @@ def render_bf25_dashboard():
             st.session_state.selected_campaign = None
             st.rerun()
     
-    st.markdown(f"""
-        <div class="main-header">
-            <h1>{config['name']}</h1>
-            <p>Dashboard de Acompanhamento</p>
-        </div>
-    """, unsafe_allow_html=True)
+    bf_logo_path = "attached_assets/[ID_VISUAL]_1125_-_BF_-_Artes_Gerais_EA_1769115563727.png"
+    
+    header_col1, header_col2 = st.columns([1, 4])
+    with header_col1:
+        st.image(bf_logo_path, width=120)
+    with header_col2:
+        st.markdown(f"""
+            <div class="main-header" style="text-align: left; padding: 1rem 0;">
+                <h1 style="margin: 0;">{config['name']}</h1>
+                <p style="margin: 0.5rem 0 0 0;">Dashboard de Acompanhamento</p>
+            </div>
+        """, unsafe_allow_html=True)
     
     tabs = st.tabs(config['tabs'])
     
@@ -1287,12 +1293,30 @@ def render_imersao_dashboard():
             st.session_state.selected_campaign = None
             st.rerun()
     
-    st.markdown(f"""
-        <div class="main-header">
-            <h1>{config['name']}</h1>
-            <p>Dashboard de Acompanhamento</p>
-        </div>
-    """, unsafe_allow_html=True)
+    imersao_logo = None
+    for f in os.listdir("attached_assets"):
+        if "LANCAMENTO_PAGO_0126" in f.replace("Ç", "C") or "0126" in f:
+            imersao_logo = f"attached_assets/{f}"
+            break
+    
+    if imersao_logo:
+        header_col1, header_col2 = st.columns([1, 4])
+        with header_col1:
+            st.image(imersao_logo, width=120)
+        with header_col2:
+            st.markdown(f"""
+                <div class="main-header" style="text-align: left; padding: 1rem 0;">
+                    <h1 style="margin: 0;">{config['name']}</h1>
+                    <p style="margin: 0.5rem 0 0 0;">Dashboard de Acompanhamento</p>
+                </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+            <div class="main-header">
+                <h1>{config['name']}</h1>
+                <p>Dashboard de Acompanhamento</p>
+            </div>
+        """, unsafe_allow_html=True)
     
     tabs = st.tabs(config['tabs'])
     
