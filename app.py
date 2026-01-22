@@ -131,35 +131,27 @@ SELECTOR_STYLES = f"""
         border-radius: 2px;
     }}
     
-    .campaign-card {{
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+    .stColumn [data-testid="stVerticalBlock"] [data-testid="stButton"] button {{
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        padding: 2.5rem 2rem;
-        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 24px !important;
+        min-height: 300px !important;
+        padding: 0 !important;
+        color: transparent !important;
+        font-size: 0 !important;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        cursor: pointer;
-        position: relative;
         overflow: hidden;
-        margin-bottom: -50px;
     }}
     
-    .campaign-card + div[data-testid="stButton"] {{
-        position: relative;
-        z-index: 10;
+    .stColumn [data-testid="stVerticalBlock"] [data-testid="stButton"] button:hover {{
+        transform: translateY(-8px);
+        border-color: rgba(249, 78, 3, 0.3) !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 60px rgba(249, 78, 3, 0.15);
     }}
     
-    .campaign-card + div[data-testid="stButton"] button {{
-        background: transparent !important;
-        border: none !important;
-        height: 280px !important;
-        margin-top: -290px !important;
-        opacity: 0 !important;
-    }}
-    
-    .campaign-card::before {{
+    .stColumn [data-testid="stVerticalBlock"] [data-testid="stButton"] button::before {{
         content: '';
         position: absolute;
         top: 0;
@@ -171,16 +163,22 @@ SELECTOR_STYLES = f"""
         transition: opacity 0.3s ease;
     }}
     
-    .campaign-card:hover {{
-        transform: translateY(-8px);
-        border-color: rgba(249, 78, 3, 0.3);
-        box-shadow: 
-            0 20px 40px rgba(0, 0, 0, 0.4),
-            0 0 60px rgba(249, 78, 3, 0.15);
+    .stColumn [data-testid="stVerticalBlock"] [data-testid="stButton"] button:hover::before {{
+        opacity: 1;
     }}
     
-    .campaign-card:hover::before {{
-        opacity: 1;
+    .campaign-card-overlay {{
+        position: relative;
+        margin-top: -300px;
+        padding: 2.5rem 2rem;
+        text-align: center;
+        pointer-events: none;
+        z-index: 10;
+        min-height: 240px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }}
     
     .campaign-icon {{
@@ -198,7 +196,7 @@ SELECTOR_STYLES = f"""
         transition: all 0.3s ease;
     }}
     
-    .campaign-card:hover .campaign-logo {{
+    .stColumn [data-testid="stVerticalBlock"] [data-testid="stButton"]:hover + div .campaign-logo {{
         transform: scale(1.05);
         filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.4));
     }}
@@ -622,16 +620,24 @@ def render_campaign_selector():
                     icon = "🛒" if campaign_id == "bf25" else "🎓"
                     campaign_logo_html = f'<span class="campaign-icon">{icon}</span>'
                 
-                st.markdown(f"""
-                    <div class="campaign-card" id="card-{campaign_id}">
-                        {campaign_logo_html}
-                        <div class="campaign-name">{campaign['name']}</div>
-                        <div class="campaign-period">{period_start} - {period_end}</div>
-                        <span class="campaign-status status-{status_key}">{status_text}</span>
-                    </div>
-                """, unsafe_allow_html=True)
+                container = st.container()
+                with container:
+                    clicked = st.button(
+                        " ",
+                        key=f"btn_{campaign_id}",
+                        use_container_width=True,
+                        help=f"Acessar {campaign['name']}"
+                    )
+                    st.markdown(f"""
+                        <div class="campaign-card-overlay">
+                            {campaign_logo_html}
+                            <div class="campaign-name">{campaign['name']}</div>
+                            <div class="campaign-period">{period_start} - {period_end}</div>
+                            <span class="campaign-status status-{status_key}">{status_text}</span>
+                        </div>
+                    """, unsafe_allow_html=True)
                 
-                if st.button("​", key=f"btn_{campaign_id}", use_container_width=True):
+                if clicked:
                     st.session_state.selected_campaign = campaign_id
                     st.rerun()
     
