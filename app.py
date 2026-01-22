@@ -20,6 +20,15 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Handle campaign selection via URL query params
+query_params = st.query_params
+if 'campaign' in query_params:
+    campaign_from_url = query_params['campaign']
+    if campaign_from_url in ['bf25', 'imersao0126']:
+        st.session_state.selected_campaign = campaign_from_url
+        # Clear the query param after handling
+        st.query_params.clear()
+
 import os
 INSTITUTIONAL_ORANGE = "#F94E03"
 INSTITUTIONAL_LIGHT = "#E0E0DA"
@@ -131,6 +140,17 @@ SELECTOR_STYLES = f"""
         border-radius: 2px;
     }}
     
+    /* Campaign card link styling */
+    .campaign-link {{
+        text-decoration: none !important;
+        color: inherit !important;
+        display: block !important;
+    }}
+    
+    .campaign-link:hover {{
+        text-decoration: none !important;
+    }}
+    
     .campaign-card {{
         background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
         backdrop-filter: blur(20px);
@@ -143,6 +163,11 @@ SELECTOR_STYLES = f"""
         cursor: pointer;
         position: relative;
         overflow: hidden;
+        min-height: 280px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }}
     
     .campaign-card:hover {{
@@ -165,38 +190,6 @@ SELECTOR_STYLES = f"""
     
     .campaign-card:hover::before {{
         opacity: 1;
-    }}
-    
-    .campaign-card-wrapper {{
-        position: relative;
-    }}
-    
-    .campaign-card-wrapper [data-testid="stButton"] {{
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        z-index: 100 !important;
-    }}
-    
-    .campaign-card-wrapper [data-testid="stButton"] button {{
-        width: 100% !important;
-        height: 100% !important;
-        background: transparent !important;
-        border: none !important;
-        color: transparent !important;
-        font-size: 0 !important;
-        cursor: pointer !important;
-    }}
-    
-    .campaign-card-wrapper [data-testid="stButton"] button:hover {{
-        background: transparent !important;
-    }}
-    
-    .campaign-card-wrapper [data-testid="stButton"] button:focus {{
-        box-shadow: none !important;
-        outline: none !important;
     }}
     
     .campaign-icon {{
@@ -638,20 +631,15 @@ def render_campaign_selector():
                     icon = "🛒" if campaign_id == "bf25" else "🎓"
                     campaign_logo_html = f'<span class="campaign-icon">{icon}</span>'
                 
-                st.markdown('<div class="campaign-card-wrapper">', unsafe_allow_html=True)
-                
-                if st.button(" ", key=f"btn_{campaign_id}", use_container_width=True):
-                    st.session_state.selected_campaign = campaign_id
-                    st.rerun()
-                
                 st.markdown(f"""
-                    <div class="campaign-card">
-                        {campaign_logo_html}
-                        <div class="campaign-name">{campaign['name']}</div>
-                        <div class="campaign-period">{period_start} - {period_end}</div>
-                        <span class="campaign-status status-{status_key}">{status_text}</span>
-                    </div>
-                </div>
+                    <a href="?campaign={campaign_id}" class="campaign-link">
+                        <div class="campaign-card">
+                            {campaign_logo_html}
+                            <div class="campaign-name">{campaign['name']}</div>
+                            <div class="campaign-period">{period_start} - {period_end}</div>
+                            <span class="campaign-status status-{status_key}">{status_text}</span>
+                        </div>
+                    </a>
                 """, unsafe_allow_html=True)
     
     st.markdown("<br><br>", unsafe_allow_html=True)
