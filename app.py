@@ -167,24 +167,36 @@ SELECTOR_STYLES = f"""
         opacity: 1;
     }}
     
-    .campaign-card + div [data-testid="stButton"] {{
-        margin-top: -10px;
-        margin-bottom: 10px;
+    .campaign-card-wrapper {{
+        position: relative;
     }}
     
-    .campaign-card + div [data-testid="stButton"] button {{
-        background: linear-gradient(135deg, {INSTITUTIONAL_ORANGE} 0%, {INSTITUTIONAL_ORANGE_LIGHT} 100%) !important;
+    .campaign-card-wrapper [data-testid="stButton"] {{
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        z-index: 100 !important;
+    }}
+    
+    .campaign-card-wrapper [data-testid="stButton"] button {{
+        width: 100% !important;
+        height: 100% !important;
+        background: transparent !important;
         border: none !important;
-        border-radius: 12px !important;
-        padding: 0.6rem 1.5rem !important;
-        font-weight: 600 !important;
-        font-size: 0.9rem !important;
-        transition: all 0.3s ease !important;
+        color: transparent !important;
+        font-size: 0 !important;
+        cursor: pointer !important;
     }}
     
-    .campaign-card + div [data-testid="stButton"] button:hover {{
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 20px rgba(249, 78, 3, 0.4) !important;
+    .campaign-card-wrapper [data-testid="stButton"] button:hover {{
+        background: transparent !important;
+    }}
+    
+    .campaign-card-wrapper [data-testid="stButton"] button:focus {{
+        box-shadow: none !important;
+        outline: none !important;
     }}
     
     .campaign-icon {{
@@ -626,18 +638,21 @@ def render_campaign_selector():
                     icon = "🛒" if campaign_id == "bf25" else "🎓"
                     campaign_logo_html = f'<span class="campaign-icon">{icon}</span>'
                 
+                st.markdown('<div class="campaign-card-wrapper">', unsafe_allow_html=True)
+                
+                if st.button(" ", key=f"btn_{campaign_id}", use_container_width=True):
+                    st.session_state.selected_campaign = campaign_id
+                    st.rerun()
+                
                 st.markdown(f"""
-                    <div class="campaign-card" onclick="document.querySelector('[data-testid=stBaseButton-secondary][key=btn_{campaign_id}]').click()">
+                    <div class="campaign-card">
                         {campaign_logo_html}
                         <div class="campaign-name">{campaign['name']}</div>
                         <div class="campaign-period">{period_start} - {period_end}</div>
                         <span class="campaign-status status-{status_key}">{status_text}</span>
                     </div>
+                </div>
                 """, unsafe_allow_html=True)
-                
-                if st.button(f"Acessar", key=f"btn_{campaign_id}", use_container_width=True, type="primary"):
-                    st.session_state.selected_campaign = campaign_id
-                    st.rerun()
     
     st.markdown("<br><br>", unsafe_allow_html=True)
     
