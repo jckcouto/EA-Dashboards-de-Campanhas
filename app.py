@@ -608,8 +608,38 @@ def render_campaign_selector():
                     icon = "🛒" if campaign_id == "bf25" else "🎓"
                     campaign_logo_html = f'<span class="campaign-icon">{icon}</span>'
                 
+                card_clicked = st.button(
+                    f"Acessar {campaign['name']}",
+                    key=f"btn_{campaign_id}",
+                    use_container_width=True,
+                    type="secondary"
+                )
+                
                 st.markdown(f"""
-                    <div class="campaign-card">
+                    <style>
+                        div[data-testid="stButton"] button[kind="secondary"] {{
+                            background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+                            backdrop-filter: blur(20px);
+                            -webkit-backdrop-filter: blur(20px);
+                            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                            border-radius: 24px !important;
+                            padding: 2rem 1.5rem !important;
+                            min-height: 280px !important;
+                            text-align: center;
+                            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                            display: flex !important;
+                            flex-direction: column !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            color: white !important;
+                        }}
+                        div[data-testid="stButton"] button[kind="secondary"]:hover {{
+                            transform: translateY(-8px);
+                            border-color: rgba(249, 78, 3, 0.3) !important;
+                            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 60px rgba(249, 78, 3, 0.15);
+                        }}
+                    </style>
+                    <div class="campaign-card-content" style="pointer-events: none; position: relative; margin-top: -260px; margin-bottom: 20px; z-index: 1;">
                         {campaign_logo_html}
                         <div class="campaign-name">{campaign['name']}</div>
                         <div class="campaign-period">{period_start} - {period_end}</div>
@@ -617,11 +647,7 @@ def render_campaign_selector():
                     </div>
                 """, unsafe_allow_html=True)
                 
-                if st.button(
-                    f"Acessar {campaign['name'].split()[0]}",
-                    key=f"btn_{campaign_id}",
-                    use_container_width=True
-                ):
+                if card_clicked:
                     st.session_state.selected_campaign = campaign_id
                     st.rerun()
     
