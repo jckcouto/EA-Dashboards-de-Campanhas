@@ -536,6 +536,8 @@ def init_session_state():
 
 def check_secrets_status():
     secrets = {
+        'HOTMART_CLIENT_ID': bool(os.environ.get('HOTMART_CLIENT_ID')),
+        'HOTMART_CLIENT_SECRET': bool(os.environ.get('HOTMART_CLIENT_SECRET')),
         'HOTMART_BASIC_TOKEN': bool(os.environ.get('HOTMART_BASIC_TOKEN')),
         'MANYCHAT_API_TOKEN': bool(os.environ.get('MANYCHAT_API_TOKEN')),
         'META_ACCESS_TOKEN': bool(os.environ.get('META_ACCESS_TOKEN')),
@@ -635,17 +637,23 @@ def render_campaign_selector():
         "hotmart": {
             "name": "Hotmart API",
             "icon": "💳",
-            "connected": secrets['HOTMART_BASIC_TOKEN'],
-            "secrets_needed": ["HOTMART_BASIC_TOKEN"],
+            "connected": secrets.get('HOTMART_CLIENT_ID') and secrets.get('HOTMART_CLIENT_SECRET') and secrets.get('HOTMART_BASIC_TOKEN'),
+            "secrets_needed": ["HOTMART_CLIENT_ID", "HOTMART_CLIENT_SECRET", "HOTMART_BASIC_TOKEN"],
             "description": "Integração com a plataforma Hotmart para acompanhar vendas, reembolsos e métricas de produtos.",
             "instructions": """
-**Como obter o token:**
-1. Acesse o [Hotmart Developers](https://developers.hotmart.com/)
-2. Crie uma aplicação OAuth2
-3. Gere o token Basic (Client ID:Client Secret em Base64)
-4. Copie o token gerado
+**Como obter as credenciais:**
+1. Acesse [Hotmart Developers](https://developers.hotmart.com/)
+2. Vá em **Ferramentas → Credenciais de desenvolvedor**
+3. Clique em **"Criar credencial"** → Selecione **"API Hotmart"**
+4. Copie os 3 valores gerados:
+   - **Client ID**
+   - **Client Secret**
+   - **Basic Token**
 
-**Secret necessário:** `HOTMART_BASIC_TOKEN`
+**Secrets necessários:**
+- `HOTMART_CLIENT_ID` - Identificador da aplicação
+- `HOTMART_CLIENT_SECRET` - Chave secreta
+- `HOTMART_BASIC_TOKEN` - Token para autenticação
             """
         },
         "manychat": {
@@ -852,13 +860,16 @@ def render_campaign_selector():
                             secret_inputs[secret] = None
                         else:
                             secret_labels = {
-                                "HOTMART_BASIC_TOKEN": "Token Hotmart (Basic Auth)",
+                                "HOTMART_CLIENT_ID": "Client ID Hotmart",
+                                "HOTMART_CLIENT_SECRET": "Client Secret Hotmart",
+                                "HOTMART_BASIC_TOKEN": "Basic Token Hotmart",
                                 "MANYCHAT_API_TOKEN": "Token ManyChat API"
                             }
                             label = secret_labels.get(secret, secret)
+                            is_sensitive = "TOKEN" in secret or "SECRET" in secret
                             secret_inputs[secret] = st.text_input(
                                 label,
-                                type="password" if "TOKEN" in secret else "default",
+                                type="password" if is_sensitive else "default",
                                 placeholder=f"Cole aqui seu {label}",
                                 key=f"input_{secret}"
                             )
