@@ -668,6 +668,8 @@ def render_campaign_selector():
             "icon": "📱",
             "connected": secrets['META_ACCESS_TOKEN'] and secrets['META_AD_ACCOUNT_ID'],
             "secrets_needed": ["META_ACCESS_TOKEN", "META_AD_ACCOUNT_ID"],
+            "per_campaign": True,
+            "campaign_field": "META_CAMPAIGN_NAME",
             "description": "Integração com Facebook/Meta Ads para acompanhar campanhas, gastos e métricas de anúncios.",
             "instructions": """
 **Como obter os tokens:**
@@ -677,7 +679,7 @@ def render_campaign_selector():
 4. Encontre seu Ad Account ID no Gerenciador de Anúncios
 
 **Secrets necessários:**
-- `META_ACCESS_TOKEN` - Token de acesso
+- `META_ACCESS_TOKEN` - Token de acesso (global)
 - `META_AD_ACCOUNT_ID` - ID da conta (formato: act_XXXXXXX)
             """
         },
@@ -686,6 +688,8 @@ def render_campaign_selector():
             "icon": "📊",
             "connected": secrets['GOOGLE_SPREADSHEET_ID'],
             "secrets_needed": ["GOOGLE_SPREADSHEET_ID"],
+            "per_campaign": True,
+            "campaign_field": "GOOGLE_SPREADSHEET_ID",
             "description": "Integração com Google Sheets para ler dados de leads, pesquisas e informações da planilha.",
             "instructions": """
 **Como configurar:**
@@ -693,9 +697,9 @@ def render_campaign_selector():
 2. Copie o ID da planilha da URL (entre /d/ e /edit)
 3. Compartilhe a planilha com acesso público ou com a conta de serviço
 
-**Secret necessário:** `GOOGLE_SPREADSHEET_ID`
-
 *Exemplo de URL:* `https://docs.google.com/spreadsheets/d/`**`1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms`**`/edit`
+
+⚠️ **Cada campanha usa uma planilha diferente!**
             """
         }
     }
@@ -740,45 +744,138 @@ def render_campaign_selector():
                 st.markdown(config['instructions'])
                 
                 st.markdown("---")
-                st.markdown("#### 🔑 Inserir Chaves de API")
                 
-                secret_inputs = {}
-                for secret in config['secrets_needed']:
-                    is_configured = secrets.get(secret, False)
+                is_per_campaign = config.get('per_campaign', False)
+                
+                if is_per_campaign:
+                    st.markdown("#### 🎯 Configuração por Campanha")
                     
-                    if is_configured:
-                        st.success(f"✅ `{secret}` - Já configurado")
-                        secret_inputs[secret] = None
-                    else:
-                        secret_labels = {
-                            "HOTMART_BASIC_TOKEN": "Token Hotmart (Basic Auth)",
-                            "MANYCHAT_API_TOKEN": "Token ManyChat API",
-                            "META_ACCESS_TOKEN": "Access Token Meta/Facebook",
-                            "META_AD_ACCOUNT_ID": "Ad Account ID (act_XXXXX)",
-                            "GOOGLE_SPREADSHEET_ID": "ID da Planilha Google"
-                        }
-                        label = secret_labels.get(secret, secret)
-                        secret_inputs[secret] = st.text_input(
-                            label,
-                            type="password" if "TOKEN" in secret else "default",
-                            placeholder=f"Cole aqui seu {label}",
-                            key=f"input_{secret}"
-                        )
-                
-                has_new_input = any(v for v in secret_inputs.values() if v)
-                
-                if has_new_input:
-                    if st.button("💾 Salvar Configuração", key="save_secrets", type="primary"):
-                        saved_any = False
-                        for secret_name, value in secret_inputs.items():
-                            if value and value.strip():
-                                os.environ[secret_name] = value.strip()
-                                saved_any = True
+                    campaign_options = {
+                        "bf25": "🛒 BLACK FRIDAY 2025",
+                        "imersao0126": "🚀 IMERSÃO 01/26"
+                    }
+                    
+                    selected_campaign = st.selectbox(
+                        "Selecione a campanha:",
+                        options=list(campaign_options.keys()),
+                        format_func=lambda x: campaign_options[x],
+                        key="config_campaign_selector"
+                    )
+                    
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    
+                    if key == "google_sheets":
+                        sheet_id_key = f"GOOGLE_SPREADSHEET_ID_{selected_campaign.upper()}"
+                        current_value = os.environ.get(sheet_id_key, "")
                         
-                        if saved_any:
-                            st.success("✅ Configuração salva! Recarregue a página para aplicar.")
-                            st.info("⚠️ **Importante:** Para persistir as chaves permanentemente, adicione-as na aba 'Secrets' do Replit.")
-                            st.balloons()
+                        st.markdown(f"**📊 Planilha para {campaign_options[selected_campaign]}:**")
+                        
+                        if current_value:
+                            st.success(f"✅ Planilha configurada: `...{current_value[-15:]}`")
+                        
+                        new_sheet_id = st.text_input(
+                            "ID da Planilha Google",
+                            placeholder="Cole aqui o ID da planilha (entre /d/ e /edit na URL)",
+                            key=f"input_sheet_{selected_campaign}"
+                        )
+                        
+                        if new_sheet_id:
+                            if st.button("💾 Salvar Planilha", key=f"save_sheet_{selected_campaign}", type="primary"):
+                                os.environ[sheet_id_key] = new_sheet_id.strip()
+                                st.success(f"✅ Planilha salva para {campaign_options[selected_campaign]}!")
+                                st.balloons()
+                    
+                    elif key == "meta_ads":
+                        st.markdown("##### 🔑 Credenciais Globais (todas as campanhas)")
+                        
+                        secret_inputs = {}
+                        for secret in ["META_ACCESS_TOKEN", "META_AD_ACCOUNT_ID"]:
+                            is_configured = secrets.get(secret, False)
+                            if is_configured:
+                                st.success(f"✅ `{secret}` - Configurado")
+                            else:
+                                secret_labels = {
+                                    "META_ACCESS_TOKEN": "Access Token Meta/Facebook",
+                                    "META_AD_ACCOUNT_ID": "Ad Account ID (act_XXXXX)"
+                                }
+                                label = secret_labels.get(secret, secret)
+                                secret_inputs[secret] = st.text_input(
+                                    label,
+                                    type="password" if "TOKEN" in secret else "default",
+                                    placeholder=f"Cole aqui seu {label}",
+                                    key=f"input_{secret}"
+                                )
+                        
+                        st.markdown("---")
+                        st.markdown(f"##### 📢 Nome da Campanha no Meta Ads")
+                        st.markdown(f"**Campanha selecionada:** {campaign_options[selected_campaign]}")
+                        
+                        campaign_name_key = f"META_CAMPAIGN_NAME_{selected_campaign.upper()}"
+                        current_campaign_name = os.environ.get(campaign_name_key, "")
+                        
+                        if current_campaign_name:
+                            st.info(f"📌 Nome atual: `{current_campaign_name}`")
+                        
+                        new_campaign_name = st.text_input(
+                            "Nome da Campanha no Meta Ads",
+                            placeholder="Ex: [CONVERSÃO] Black Friday 2025",
+                            key=f"input_meta_campaign_{selected_campaign}"
+                        )
+                        
+                        has_new_input = any(v for v in secret_inputs.values() if v) or new_campaign_name
+                        
+                        if has_new_input:
+                            if st.button("💾 Salvar Configuração", key="save_meta_config", type="primary"):
+                                saved_any = False
+                                for secret_name, value in secret_inputs.items():
+                                    if value and value.strip():
+                                        os.environ[secret_name] = value.strip()
+                                        saved_any = True
+                                
+                                if new_campaign_name:
+                                    os.environ[campaign_name_key] = new_campaign_name.strip()
+                                    saved_any = True
+                                
+                                if saved_any:
+                                    st.success("✅ Configuração salva!")
+                                    st.balloons()
+                
+                else:
+                    st.markdown("#### 🔑 Inserir Chaves de API")
+                    
+                    secret_inputs = {}
+                    for secret in config['secrets_needed']:
+                        is_configured = secrets.get(secret, False)
+                        
+                        if is_configured:
+                            st.success(f"✅ `{secret}` - Já configurado")
+                            secret_inputs[secret] = None
+                        else:
+                            secret_labels = {
+                                "HOTMART_BASIC_TOKEN": "Token Hotmart (Basic Auth)",
+                                "MANYCHAT_API_TOKEN": "Token ManyChat API"
+                            }
+                            label = secret_labels.get(secret, secret)
+                            secret_inputs[secret] = st.text_input(
+                                label,
+                                type="password" if "TOKEN" in secret else "default",
+                                placeholder=f"Cole aqui seu {label}",
+                                key=f"input_{secret}"
+                            )
+                    
+                    has_new_input = any(v for v in secret_inputs.values() if v)
+                    
+                    if has_new_input:
+                        if st.button("💾 Salvar Configuração", key="save_secrets", type="primary"):
+                            saved_any = False
+                            for secret_name, value in secret_inputs.items():
+                                if value and value.strip():
+                                    os.environ[secret_name] = value.strip()
+                                    saved_any = True
+                            
+                            if saved_any:
+                                st.success("✅ Configuração salva! Recarregue a página para aplicar.")
+                                st.balloons()
                 
                 st.markdown("""
                     <br>
