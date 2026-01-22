@@ -631,29 +631,157 @@ def render_campaign_selector():
         </div>
     """, unsafe_allow_html=True)
     
-    integrations = [
-        ("Hotmart API", secrets['HOTMART_BASIC_TOKEN'], "💳"),
-        ("ManyChat", secrets['MANYCHAT_API_TOKEN'], "💬"),
-        ("Meta Ads", secrets['META_ACCESS_TOKEN'] and secrets['META_AD_ACCOUNT_ID'], "📱"),
-        ("Google Sheets", secrets['GOOGLE_SPREADSHEET_ID'], "📊"),
-    ]
+    integrations_config = {
+        "hotmart": {
+            "name": "Hotmart API",
+            "icon": "💳",
+            "connected": secrets['HOTMART_BASIC_TOKEN'],
+            "secrets_needed": ["HOTMART_BASIC_TOKEN"],
+            "description": "Integração com a plataforma Hotmart para acompanhar vendas, reembolsos e métricas de produtos.",
+            "instructions": """
+**Como obter o token:**
+1. Acesse o [Hotmart Developers](https://developers.hotmart.com/)
+2. Crie uma aplicação OAuth2
+3. Gere o token Basic (Client ID:Client Secret em Base64)
+4. Copie o token gerado
+
+**Secret necessário:** `HOTMART_BASIC_TOKEN`
+            """
+        },
+        "manychat": {
+            "name": "ManyChat",
+            "icon": "💬",
+            "connected": secrets['MANYCHAT_API_TOKEN'],
+            "secrets_needed": ["MANYCHAT_API_TOKEN"],
+            "description": "Integração com ManyChat para métricas de WhatsApp, fluxos de automação e engajamento.",
+            "instructions": """
+**Como obter o token:**
+1. Acesse [ManyChat](https://manychat.com/) e faça login
+2. Vá em Settings → API
+3. Copie o API Token
+
+**Secret necessário:** `MANYCHAT_API_TOKEN`
+            """
+        },
+        "meta_ads": {
+            "name": "Meta Ads",
+            "icon": "📱",
+            "connected": secrets['META_ACCESS_TOKEN'] and secrets['META_AD_ACCOUNT_ID'],
+            "secrets_needed": ["META_ACCESS_TOKEN", "META_AD_ACCOUNT_ID"],
+            "description": "Integração com Facebook/Meta Ads para acompanhar campanhas, gastos e métricas de anúncios.",
+            "instructions": """
+**Como obter os tokens:**
+1. Acesse [Facebook Developers](https://developers.facebook.com/)
+2. Crie um App de Marketing
+3. Gere um Access Token com permissões de Ads
+4. Encontre seu Ad Account ID no Gerenciador de Anúncios
+
+**Secrets necessários:**
+- `META_ACCESS_TOKEN` - Token de acesso
+- `META_AD_ACCOUNT_ID` - ID da conta (formato: act_XXXXXXX)
+            """
+        },
+        "google_sheets": {
+            "name": "Google Sheets",
+            "icon": "📊",
+            "connected": secrets['GOOGLE_SPREADSHEET_ID'],
+            "secrets_needed": ["GOOGLE_SPREADSHEET_ID"],
+            "description": "Integração com Google Sheets para ler dados de leads, pesquisas e informações da planilha.",
+            "instructions": """
+**Como configurar:**
+1. Abra sua planilha no Google Sheets
+2. Copie o ID da planilha da URL (entre /d/ e /edit)
+3. Compartilhe a planilha com acesso público ou com a conta de serviço
+
+**Secret necessário:** `GOOGLE_SPREADSHEET_ID`
+
+*Exemplo de URL:* `https://docs.google.com/spreadsheets/d/`**`1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms`**`/edit`
+            """
+        }
+    }
     
     col_spacer1, col_int, col_spacer2 = st.columns([1, 4, 1])
     
     with col_int:
         int_cols = st.columns(4)
-        for idx, (name, connected, icon) in enumerate(integrations):
+        for idx, (key, config) in enumerate(integrations_config.items()):
             with int_cols[idx]:
-                status_class = "integration-connected" if connected else "integration-disconnected"
-                status_text = "Conectado" if connected else "Não configurado"
-                status_icon = "●" if connected else "○"
+                status_class = "integration-connected" if config['connected'] else "integration-disconnected"
+                status_text = "Conectado" if config['connected'] else "Configurar"
+                status_icon = "●" if config['connected'] else "⚙️"
+                
+                if st.button(f"{config['icon']} {config['name']}", key=f"int_btn_{key}", use_container_width=True):
+                    st.session_state.config_integration = key
+                
                 st.markdown(f"""
-                    <div class="integration-card">
-                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">{icon}</div>
-                        <div class="integration-name">{name}</div>
-                        <div class="integration-status {status_class}">{status_icon} {status_text}</div>
+                    <div style="text-align: center; margin-top: -10px;">
+                        <span class="integration-status {status_class}">{status_icon} {status_text}</span>
                     </div>
                 """, unsafe_allow_html=True)
+    
+    if 'config_integration' in st.session_state and st.session_state.config_integration:
+        key = st.session_state.config_integration
+        config = integrations_config[key]
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        with st.container():
+            st.markdown(f"""
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+                            border-radius: 16px; padding: 2rem; margin: 1rem 0;">
+                    <h3 style="color: #F94E03; margin-bottom: 0.5rem;">{config['icon']} Configurar {config['name']}</h3>
+                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 1.5rem;">{config['description']}</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            col1, col2 = st.columns([2, 1])
+            
+            with col1:
+                st.markdown(config['instructions'])
+                
+                st.markdown("---")
+                st.markdown("**Secrets a configurar:**")
+                for secret in config['secrets_needed']:
+                    if secrets.get(secret.replace('HOTMART_BASIC_TOKEN', 'HOTMART_BASIC_TOKEN').replace('MANYCHAT_API_TOKEN', 'MANYCHAT_API_TOKEN')):
+                        st.success(f"✅ `{secret}` - Configurado")
+                    else:
+                        st.warning(f"⚠️ `{secret}` - Não configurado")
+                
+                st.markdown("""
+                    <br>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.85rem;">
+                    💡 <strong>Dica:</strong> Para adicionar secrets, clique na aba "Secrets" no painel lateral do Replit 
+                    ou use o ícone de cadeado 🔒 no menu de ferramentas.
+                    </p>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                if config['connected']:
+                    st.markdown("""
+                        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);
+                                    border-radius: 12px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">✅</div>
+                            <div style="color: #10B981; font-weight: 600;">Integração Ativa</div>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-top: 0.5rem;">
+                                Todos os secrets necessários estão configurados.
+                            </p>
+                        </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown("""
+                        <div style="background: rgba(249, 78, 3, 0.1); border: 1px solid rgba(249, 78, 3, 0.3);
+                                    border-radius: 12px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚠️</div>
+                            <div style="color: #F94E03; font-weight: 600;">Configuração Pendente</div>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-top: 0.5rem;">
+                                Adicione os secrets necessários para ativar.
+                            </p>
+                        </div>
+                    """, unsafe_allow_html=True)
+            
+            if st.button("❌ Fechar", key="close_config"):
+                st.session_state.config_integration = None
+                st.rerun()
     
     st.markdown(f"""
         <div class="footer-info">
