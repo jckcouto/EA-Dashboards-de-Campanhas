@@ -742,15 +742,17 @@ def render_campaign_selector():
                     campaign_logo_html = f'<span class="campaign-icon">{icon}</span>'
                 
                 st.markdown(f"""
-                    <a href="?campaign={campaign_id}" target="_top" class="campaign-link">
-                        <div class="campaign-card">
-                            {campaign_logo_html}
-                            <div class="campaign-name">{campaign['name']}</div>
-                            <div class="campaign-period">{period_start} - {period_end}</div>
-                            <span class="campaign-status status-{status_key}">{status_text}</span>
-                        </div>
-                    </a>
+                    <div class="campaign-card">
+                        {campaign_logo_html}
+                        <div class="campaign-name">{campaign['name']}</div>
+                        <div class="campaign-period">{period_start} - {period_end}</div>
+                        <span class="campaign-status status-{status_key}">{status_text}</span>
+                    </div>
                 """, unsafe_allow_html=True)
+                
+                if st.button("Acessar Dashboard", key=f"btn_{campaign_id}", type="primary", use_container_width=True):
+                    st.session_state.selected_campaign = campaign_id
+                    st.rerun()
     
     st.markdown("<br><br>", unsafe_allow_html=True)
     
