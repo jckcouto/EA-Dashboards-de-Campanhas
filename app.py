@@ -156,10 +156,21 @@ SELECTOR_STYLES = f"""
         text-decoration: none !important;
         color: inherit !important;
         display: block !important;
+        position: relative;
+        z-index: 1000;
+        cursor: pointer !important;
     }}
     
     .campaign-link:hover {{
         text-decoration: none !important;
+    }}
+    
+    .campaign-link * {{
+        pointer-events: none;
+    }}
+    
+    .campaign-link {{
+        pointer-events: auto !important;
     }}
     
     .campaign-card {{
@@ -1057,6 +1068,7 @@ def render_bf25_dashboard():
     # Unified header with back button
     if st.button("← Voltar", key="back_bf25"):
         st.session_state.selected_campaign = None
+        st.query_params.clear()
         st.rerun()
     
     import base64
@@ -1408,6 +1420,7 @@ def render_imersao_dashboard():
     # Unified header with back button
     if st.button("← Voltar", key="back_imersao"):
         st.session_state.selected_campaign = None
+        st.query_params.clear()
         st.rerun()
     
     imersao_logo = None
