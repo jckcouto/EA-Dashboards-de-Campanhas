@@ -25,9 +25,10 @@ query_params = st.query_params
 if 'campaign' in query_params:
     campaign_from_url = query_params['campaign']
     if campaign_from_url in ['bf25', 'imersao0126']:
+        # Initialize session state if needed before setting
+        if 'selected_campaign' not in st.session_state:
+            st.session_state.selected_campaign = None
         st.session_state.selected_campaign = campaign_from_url
-        # Clear the query param after handling
-        st.query_params.clear()
 
 import os
 INSTITUTIONAL_ORANGE = "#F94E03"
