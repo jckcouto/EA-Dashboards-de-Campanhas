@@ -675,7 +675,9 @@ def check_secrets_status():
         'MANYCHAT_API_TOKEN': bool(os.environ.get('MANYCHAT_API_TOKEN')),
         'META_ACCESS_TOKEN': bool(os.environ.get('META_ACCESS_TOKEN')),
         'META_AD_ACCOUNT_ID': bool(os.environ.get('META_AD_ACCOUNT_ID')),
-        'GOOGLE_SPREADSHEET_ID': bool(os.environ.get('GOOGLE_SPREADSHEET_ID'))
+        'GOOGLE_SPREADSHEET_ID': bool(os.environ.get('GOOGLE_SPREADSHEET_ID') or os.environ.get('GOOGLE_SPREADSHEET_ID_BF25') or os.environ.get('GOOGLE_SPREADSHEET_ID_IMERSAO0126')),
+        'GOOGLE_SPREADSHEET_ID_BF25': bool(os.environ.get('GOOGLE_SPREADSHEET_ID_BF25')),
+        'GOOGLE_SPREADSHEET_ID_IMERSAO0126': bool(os.environ.get('GOOGLE_SPREADSHEET_ID_IMERSAO0126'))
     }
     return secrets
 
@@ -1125,7 +1127,7 @@ def render_bf25_dashboard():
 def render_bf25_captacao(secrets):
     st.subheader("Visão da Captação")
     
-    if secrets['GOOGLE_SPREADSHEET_ID']:
+    if secrets.get('GOOGLE_SPREADSHEET_ID_BF25') or secrets.get('GOOGLE_SPREADSHEET_ID'):
         try:
             client = st.session_state.sheets_client
             leads_alunos = client.get_leads_alunos()
@@ -1173,7 +1175,7 @@ def render_bf25_captacao(secrets):
         with col4:
             st.metric("Taxa de Conversão", "---")
         
-        st.info("Configure o GOOGLE_SPREADSHEET_ID nos Secrets para visualizar os dados de captação.")
+        st.info("Configure o GOOGLE_SPREADSHEET_ID_BF25 nos Secrets para visualizar os dados de captação.")
 
 def render_bf25_vendas(config, secrets):
     st.subheader("Vendas")
@@ -1240,15 +1242,15 @@ def render_bf25_comparar(config, secrets):
 def render_bf25_origem_leads(secrets):
     st.subheader("Origem dos Leads")
     
-    if secrets['GOOGLE_SPREADSHEET_ID']:
+    if secrets.get('GOOGLE_SPREADSHEET_ID_BF25') or secrets.get('GOOGLE_SPREADSHEET_ID'):
         st.info("Análise de origem dos leads será exibida com base nos dados do Google Sheets.")
     else:
-        st.info("Configure o GOOGLE_SPREADSHEET_ID nos Secrets para visualizar a origem dos leads.")
+        st.info("Configure o GOOGLE_SPREADSHEET_ID_BF25 nos Secrets para visualizar a origem dos leads.")
 
 def render_bf25_pesquisa(secrets):
     st.subheader("Pesquisa")
     
-    if secrets['GOOGLE_SPREADSHEET_ID']:
+    if secrets.get('GOOGLE_SPREADSHEET_ID_BF25') or secrets.get('GOOGLE_SPREADSHEET_ID'):
         try:
             client = st.session_state.sheets_client
             pesquisa_alunos = client.get_pesquisa_alunos()
@@ -1267,7 +1269,7 @@ def render_bf25_pesquisa(secrets):
         except Exception as e:
             st.warning(f"Erro ao carregar pesquisa: {e}")
     else:
-        st.info("Configure o GOOGLE_SPREADSHEET_ID nos Secrets para visualizar as pesquisas.")
+        st.info("Configure o GOOGLE_SPREADSHEET_ID_BF25 nos Secrets para visualizar as pesquisas.")
 
 def render_bf25_investimentos():
     st.subheader("Investimentos Extras")
