@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -61,7 +62,7 @@ CAMPAIGNS = {
                 "product_name": "Orderbump Gravação"
             }
         },
-        "google_sheets_id": "1KwL7xYFSp-M_tqnHvMfBcDwiJqcoQy8FtPefUSefdNk",
+        "google_sheets_id": os.environ.get('GOOGLE_SPREADSHEET_ID_IMERSAO0126', ''),
         "tabs": [
             "VENDAS",
             "REEMBOLSOS",

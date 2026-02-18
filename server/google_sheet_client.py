@@ -53,7 +53,7 @@ class GoogleSheetClient:
 
 class ImersaoSheetClient(GoogleSheetClient):
     def __init__(self):
-        super().__init__(spreadsheet_id='1KwL7xYFSp-M_tqnHvMfBcDwiJqcoQy8FtPefUSefdNk')
+        super().__init__(spreadsheet_id=os.environ.get('GOOGLE_SPREADSHEET_ID_IMERSAO0126', ''))
     
     def get_vendas(self) -> list:
         return self.get_sheet_data('VENDAS')
