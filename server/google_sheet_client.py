@@ -54,15 +54,32 @@ class GoogleSheetClient:
 class ImersaoSheetClient(GoogleSheetClient):
     def __init__(self):
         super().__init__(spreadsheet_id=os.environ.get('GOOGLE_SPREADSHEET_ID_IMERSAO0126', ''))
-    
+
     def get_vendas(self) -> list:
         return self.get_sheet_data('VENDAS')
-    
+
     def get_reembolsos(self) -> list:
         return self.get_sheet_data('REEMBOLSOS')
-    
+
     def get_pesquisa(self) -> list:
         return self.get_sheet_data('PESQUISA')
-    
+
     def get_monitoramento_grupos(self) -> list:
         return self.get_sheet_data('MONITORAMENTO GRUPOS')
+
+
+class DesafioSheetClient(GoogleSheetClient):
+    def __init__(self):
+        super().__init__(spreadsheet_id=os.environ.get('GOOGLE_SPREADSHEET_ID_DESAFIO0326', ''))
+
+    def get_leads(self) -> list:
+        return self.get_sheet_data('LEADS')
+
+    def get_pesquisa(self) -> list:
+        return self.get_sheet_data('PESQUISA')
+
+    def get_grupos(self) -> list:
+        return self.get_sheet_data('GRUPOS')
+
+    def get_origem_leads(self) -> list:
+        return self.get_sheet_data('ORIGEM DOS LEADS')

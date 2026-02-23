@@ -69,7 +69,16 @@ class MetaAdsClient:
     
     def get_imersao_metrics(self, start_date: datetime, end_date: datetime) -> dict:
         insights = self.get_insights(start_date, end_date, 'WSIA_JAN26')
-        
+
+        data = insights.get('data', [{}])
+        if data:
+            return data[0]
+        return {}
+
+    def get_desafio0326_metrics(self, start_date: datetime, end_date: datetime) -> dict:
+        campaign_filter = os.environ.get('META_CAMPAIGN_NAME_DESAFIO0326', 'DESAFIO_IA_MAR26')
+        insights = self.get_insights(start_date, end_date, campaign_filter)
+
         data = insights.get('data', [{}])
         if data:
             return data[0]

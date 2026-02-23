@@ -9,7 +9,7 @@ from campaigns.config import CAMPAIGNS, get_campaign_config, BRT
 from server.hotmart_client import HotmartClient
 from server.manychat_client import ManyChatClient
 from server.meta_ads_client import MetaAdsClient
-from server.google_sheet_client import GoogleSheetClient, ImersaoSheetClient
+from server.google_sheet_client import GoogleSheetClient, ImersaoSheetClient, DesafioSheetClient
 from utils.data_processor import process_hotmart_sales, calculate_sales_metrics, process_sheets_data, group_sales_by_date
 from utils.chart_helpers import create_sales_line_chart, create_revenue_bar_chart, create_dark_theme_chart
 
@@ -24,7 +24,7 @@ st.set_page_config(
 query_params = st.query_params
 if 'campaign' in query_params:
     campaign_from_url = query_params['campaign']
-    if campaign_from_url in ['bf25', 'imersao0126']:
+    if campaign_from_url in ['bf25', 'imersao0126', 'desafio0326']:
         # Initialize session state if needed before setting
         if 'selected_campaign' not in st.session_state:
             st.session_state.selected_campaign = None
@@ -666,6 +666,8 @@ def init_session_state():
         st.session_state.sheets_client = GoogleSheetClient()
     if 'imersao_sheets_client' not in st.session_state:
         st.session_state.imersao_sheets_client = ImersaoSheetClient()
+    if 'desafio_sheets_client' not in st.session_state:
+        st.session_state.desafio_sheets_client = DesafioSheetClient()
 
 def check_secrets_status():
     secrets = {
@@ -677,7 +679,8 @@ def check_secrets_status():
         'META_AD_ACCOUNT_ID': bool(os.environ.get('META_AD_ACCOUNT_ID')),
         'GOOGLE_SPREADSHEET_ID': bool(os.environ.get('GOOGLE_SPREADSHEET_ID') or os.environ.get('GOOGLE_SPREADSHEET_ID_BF25') or os.environ.get('GOOGLE_SPREADSHEET_ID_IMERSAO0126')),
         'GOOGLE_SPREADSHEET_ID_BF25': bool(os.environ.get('GOOGLE_SPREADSHEET_ID_BF25')),
-        'GOOGLE_SPREADSHEET_ID_IMERSAO0126': bool(os.environ.get('GOOGLE_SPREADSHEET_ID_IMERSAO0126'))
+        'GOOGLE_SPREADSHEET_ID_IMERSAO0126': bool(os.environ.get('GOOGLE_SPREADSHEET_ID_IMERSAO0126')),
+        'GOOGLE_SPREADSHEET_ID_DESAFIO0326': bool(os.environ.get('GOOGLE_SPREADSHEET_ID_DESAFIO0326'))
     }
     return secrets
 
@@ -890,8 +893,9 @@ def render_campaign_selector():
                     st.markdown("#### 🎯 Configuração por Campanha")
                     
                     campaign_options = {
-                        "bf25": "🛒 BLACK FRIDAY 2025",
-                        "imersao0126": "🚀 IMERSÃO 01/26"
+                        "bf25": "BLACK FRIDAY 2025",
+                        "imersao0126": "IMERSAO 01/26",
+                        "desafio0326": "DESAFIO IA 03/26"
                     }
                     
                     selected_campaign = st.selectbox(
@@ -1684,15 +1688,376 @@ def render_imersao_monitoramento():
     except Exception as e:
         st.info("Dados de monitoramento serão exibidos quando disponíveis.")
 
+def render_desafio_dashboard():
+    st.markdown(INSTITUTIONAL_STYLES, unsafe_allow_html=True)
+
+    config = get_campaign_config('desafio0326')
+    secrets = check_secrets_status()
+
+    if st.button("← Voltar", key="back_desafio"):
+        st.session_state.selected_campaign = None
+        st.query_params.clear()
+        st.rerun()
+
+    import base64
+    logo_html = ""
+    try:
+        with open(LOGO_PATH, "rb") as f:
+            logo_b64 = base64.b64encode(f.read()).decode()
+        logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="header-logo" />'
+    except:
+        pass
+
+    st.markdown(f"""
+        <div class="campaign-header">
+            {logo_html}
+            <div class="header-text">
+                <h1>{config['name']}</h1>
+                <p>Dashboard de Acompanhamento — 09/03 a 13/03/2026</p>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    tabs = st.tabs(config['tabs'])
+
+    with tabs[0]:
+        render_desafio_captacao(config, secrets)
+
+    with tabs[1]:
+        render_desafio_pesquisa(secrets)
+
+    with tabs[2]:
+        render_desafio_grupos(secrets)
+
+    with tabs[3]:
+        render_desafio_origem_leads(secrets)
+
+    with tabs[4]:
+        render_desafio_meta_ads(config, secrets)
+
+
+def render_desafio_captacao(config, secrets):
+    st.subheader("Captacao de Leads")
+
+    has_sheets = secrets.get('GOOGLE_SPREADSHEET_ID_DESAFIO0326')
+    has_hotmart = secrets.get('HOTMART_BASIC_TOKEN')
+
+    # Hotmart sales metrics
+    total_principal = 0
+    total_vip = 0
+    total_ea = 0
+    revenue_principal = 0
+    revenue_vip = 0
+    revenue_ea = 0
+
+    if has_hotmart:
+        try:
+            client = st.session_state.hotmart_client
+            start_date = config['period_start']
+            end_date = min(config['period_end'], datetime.now(BRT))
+
+            with st.spinner("Carregando vendas da Hotmart..."):
+                sales_principal = client.get_approved_sales(config['hotmart']['principal']['product_id'], start_date, end_date)
+                sales_vip = client.get_approved_sales(config['hotmart']['orderbump_vip']['product_id'], start_date, end_date)
+                sales_ea = client.get_approved_sales(config['hotmart']['escola_automacao']['product_id'], start_date, end_date)
+
+            df_principal = process_hotmart_sales(sales_principal)
+            df_vip = process_hotmart_sales(sales_vip)
+            df_ea = process_hotmart_sales(sales_ea)
+
+            m_principal = calculate_sales_metrics(df_principal)
+            m_vip = calculate_sales_metrics(df_vip)
+            m_ea = calculate_sales_metrics(df_ea)
+
+            total_principal = m_principal['total_sales']
+            total_vip = m_vip['total_sales']
+            total_ea = m_ea['total_sales']
+            revenue_principal = m_principal['total_revenue']
+            revenue_vip = m_vip['total_revenue']
+            revenue_ea = m_ea['total_revenue']
+        except Exception as e:
+            st.warning(f"Erro ao carregar vendas Hotmart: {e}")
+
+    total_leads = 0
+    if has_sheets:
+        try:
+            client = st.session_state.desafio_sheets_client
+            leads = client.get_leads()
+            total_leads = len(leads) - 1 if len(leads) > 1 else 0
+        except Exception as e:
+            st.warning(f"Erro ao carregar leads: {e}")
+
+    total_revenue = revenue_principal + revenue_vip + revenue_ea
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.markdown(f"""
+            <div class="glass-card">
+                <div class="metric-label">Total de Leads</div>
+                <div class="metric-value">{total_leads:,}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        st.markdown(f"""
+            <div class="glass-card">
+                <div class="metric-label">Vendas Desafio</div>
+                <div class="metric-value">{total_principal:,}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col3:
+        st.markdown(f"""
+            <div class="glass-card">
+                <div class="metric-label">Orderbumps VIP</div>
+                <div class="metric-value">{total_vip:,}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col4:
+        st.markdown(f"""
+            <div class="glass-card">
+                <div class="metric-label">Faturamento Total</div>
+                <div class="metric-value">{format_currency(total_revenue)}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    col5, col6 = st.columns(2)
+
+    with col5:
+        st.markdown(f"""
+            <div class="glass-card">
+                <div class="metric-label">Vendas Escola de Automacao</div>
+                <div class="metric-value">{total_ea:,}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col6:
+        conv_rate = (total_principal / total_leads * 100) if total_leads > 0 else 0
+        st.markdown(f"""
+            <div class="glass-card">
+                <div class="metric-label">Taxa de Conversao (Lead → Venda)</div>
+                <div class="metric-value">{conv_rate:.1f}%</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    if has_hotmart and total_principal > 0:
+        grouped = group_sales_by_date(df_principal)
+        if not grouped.empty:
+            fig = create_sales_line_chart(grouped, INSTITUTIONAL_ORANGE, INSTITUTIONAL_ORANGE_LIGHT)
+            fig = create_dark_theme_chart(fig)
+            fig.update_layout(title='Vendas por Dia — Desafio IA')
+            st.plotly_chart(fig, use_container_width=True)
+
+            fig2 = create_revenue_bar_chart(grouped, INSTITUTIONAL_ORANGE)
+            fig2 = create_dark_theme_chart(fig2)
+            fig2.update_layout(title='Faturamento por Dia — Desafio IA')
+            st.plotly_chart(fig2, use_container_width=True)
+
+    if not has_sheets and not has_hotmart:
+        st.info("Configure GOOGLE_SPREADSHEET_ID_DESAFIO0326 e/ou HOTMART_BASIC_TOKEN nos Secrets para visualizar os dados.")
+
+
+def render_desafio_pesquisa(secrets):
+    st.subheader("Pesquisa")
+
+    if secrets.get('GOOGLE_SPREADSHEET_ID_DESAFIO0326'):
+        try:
+            client = st.session_state.desafio_sheets_client
+            pesquisa = client.get_pesquisa()
+
+            total = len(pesquisa) - 1 if len(pesquisa) > 1 else 0
+
+            st.markdown(f"""
+                <div class="glass-card">
+                    <div class="metric-label">Total de Respostas</div>
+                    <div class="metric-value">{total:,}</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+            if total > 0:
+                df = process_sheets_data(pesquisa)
+                st.dataframe(df, use_container_width=True)
+        except Exception as e:
+            st.warning(f"Erro ao carregar pesquisa: {e}")
+    else:
+        st.markdown("""
+            <div class="glass-card">
+                <div class="metric-label">Total de Respostas</div>
+                <div class="metric-value">---</div>
+            </div>
+        """, unsafe_allow_html=True)
+        st.info("Configure GOOGLE_SPREADSHEET_ID_DESAFIO0326 nos Secrets para visualizar a pesquisa.")
+
+
+def render_desafio_grupos(secrets):
+    st.subheader("Grupos")
+
+    if secrets.get('GOOGLE_SPREADSHEET_ID_DESAFIO0326'):
+        try:
+            client = st.session_state.desafio_sheets_client
+            grupos = client.get_grupos()
+
+            total = len(grupos) - 1 if len(grupos) > 1 else 0
+
+            st.markdown(f"""
+                <div class="glass-card">
+                    <div class="metric-label">Entradas nos Grupos</div>
+                    <div class="metric-value">{total:,}</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+            if total > 0:
+                df = process_sheets_data(grupos)
+                st.dataframe(df, use_container_width=True)
+        except Exception as e:
+            st.warning(f"Erro ao carregar grupos: {e}")
+    else:
+        st.markdown("""
+            <div class="glass-card">
+                <div class="metric-label">Entradas nos Grupos</div>
+                <div class="metric-value">---</div>
+            </div>
+        """, unsafe_allow_html=True)
+        st.info("Configure GOOGLE_SPREADSHEET_ID_DESAFIO0326 nos Secrets para visualizar os grupos.")
+
+
+def render_desafio_origem_leads(secrets):
+    st.subheader("Origem dos Leads")
+
+    if secrets.get('GOOGLE_SPREADSHEET_ID_DESAFIO0326'):
+        try:
+            client = st.session_state.desafio_sheets_client
+            origem = client.get_origem_leads()
+
+            total = len(origem) - 1 if len(origem) > 1 else 0
+
+            st.markdown(f"""
+                <div class="glass-card">
+                    <div class="metric-label">Registros de Origem</div>
+                    <div class="metric-value">{total:,}</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+            if total > 0:
+                df = process_sheets_data(origem)
+                st.dataframe(df, use_container_width=True)
+
+                if 'origem' in [c.lower() for c in df.columns] or 'Origem' in df.columns:
+                    col_name = 'Origem' if 'Origem' in df.columns else [c for c in df.columns if c.lower() == 'origem'][0]
+                    counts = df[col_name].value_counts()
+                    import plotly.graph_objects as go
+                    fig = go.Figure(data=[go.Pie(
+                        labels=counts.index.tolist(),
+                        values=counts.values.tolist(),
+                        hole=.4,
+                        marker_colors=[INSTITUTIONAL_ORANGE, INSTITUTIONAL_ORANGE_LIGHT, '#FFD166', '#10B981', '#6366F1']
+                    )])
+                    fig.update_layout(title="Distribuicao por Origem")
+                    fig = create_dark_theme_chart(fig)
+                    st.plotly_chart(fig, use_container_width=True)
+        except Exception as e:
+            st.warning(f"Erro ao carregar origem dos leads: {e}")
+    else:
+        st.markdown("""
+            <div class="glass-card">
+                <div class="metric-label">Registros de Origem</div>
+                <div class="metric-value">---</div>
+            </div>
+        """, unsafe_allow_html=True)
+        st.info("Configure GOOGLE_SPREADSHEET_ID_DESAFIO0326 nos Secrets para visualizar a origem dos leads.")
+
+
+def render_desafio_meta_ads(config, secrets):
+    st.subheader("Meta Ads")
+
+    if secrets['META_ACCESS_TOKEN'] and secrets['META_AD_ACCOUNT_ID']:
+        try:
+            client = st.session_state.meta_ads_client
+            start_date = config['period_start']
+            end_date = min(config['period_end'], datetime.now(BRT))
+
+            with st.spinner("Carregando dados do Meta Ads..."):
+                metrics = client.get_desafio0326_metrics(start_date, end_date)
+
+            impressions = int(metrics.get('impressions', 0))
+            clicks = int(metrics.get('clicks', 0))
+            ctr = float(metrics.get('inline_link_click_ctr', 0))
+            spend = float(metrics.get('spend', 0))
+            cpc = float(metrics.get('cpc', 0))
+
+            col1, col2, col3, col4, col5 = st.columns(5)
+
+            with col1:
+                st.markdown(f"""
+                    <div class="glass-card">
+                        <div class="metric-label">Impressoes</div>
+                        <div class="metric-value">{impressions:,}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+            with col2:
+                st.markdown(f"""
+                    <div class="glass-card">
+                        <div class="metric-label">Cliques</div>
+                        <div class="metric-value">{clicks:,}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+            with col3:
+                st.markdown(f"""
+                    <div class="glass-card">
+                        <div class="metric-label">CTR</div>
+                        <div class="metric-value">{ctr:.2f}%</div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+            with col4:
+                st.markdown(f"""
+                    <div class="glass-card">
+                        <div class="metric-label">CPC</div>
+                        <div class="metric-value">{format_currency(cpc)}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+            with col5:
+                st.markdown(f"""
+                    <div class="glass-card">
+                        <div class="metric-label">Gasto Total</div>
+                        <div class="metric-value">{format_currency(spend)}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+        except Exception as e:
+            st.warning(f"Erro ao carregar Meta Ads: {e}")
+    else:
+        col1, col2, col3, col4, col5 = st.columns(5)
+        labels = ["Impressoes", "Cliques", "CTR", "CPC", "Gasto Total"]
+        cols = [col1, col2, col3, col4, col5]
+        for col, label in zip(cols, labels):
+            with col:
+                st.markdown(f"""
+                    <div class="glass-card">
+                        <div class="metric-label">{label}</div>
+                        <div class="metric-value">---</div>
+                    </div>
+                """, unsafe_allow_html=True)
+        st.info("Configure META_ACCESS_TOKEN e META_AD_ACCOUNT_ID nos Secrets para visualizar os dados.")
+
+
 def main():
     init_session_state()
-    
+
     if st.session_state.selected_campaign is None:
         render_campaign_selector()
     elif st.session_state.selected_campaign == 'bf25':
         render_bf25_dashboard()
     elif st.session_state.selected_campaign == 'imersao0126':
         render_imersao_dashboard()
+    elif st.session_state.selected_campaign == 'desafio0326':
+        render_desafio_dashboard()
 
 if __name__ == "__main__":
     main()

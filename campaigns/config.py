@@ -76,6 +76,47 @@ CAMPAIGNS = {
             "meta_ads": False
         },
         "theme": "dark"
+    },
+    "desafio0326": {
+        "id": "desafio0326",
+        "name": "DESAFIO IA 03/26",
+        "period_start": datetime(2026, 3, 9, 0, 0, tzinfo=BRT),
+        "period_end": datetime(2026, 3, 13, 23, 59, tzinfo=BRT),
+        "colors": {
+            "primary": "#F94E03",
+            "secondary": "#FB7B3D",
+            "background": "#0B1437",
+            "text": "#FFFFFF"
+        },
+        "hotmart": {
+            "principal": {
+                "product_id": "4062912",
+                "product_name": "Desafio IA - Principal"
+            },
+            "orderbump_vip": {
+                "product_id": "6220935",
+                "product_name": "Orderbump VIP"
+            },
+            "escola_automacao": {
+                "product_id": "1355458",
+                "product_name": "Escola de Automação"
+            }
+        },
+        "google_sheets_id": os.environ.get('GOOGLE_SPREADSHEET_ID_DESAFIO0326', ''),
+        "tabs": [
+            "CAPTAÇÃO DE LEADS",
+            "PESQUISA",
+            "GRUPOS",
+            "ORIGEM DOS LEADS",
+            "META ADS"
+        ],
+        "integrations": {
+            "google_sheets": True,
+            "hotmart": True,
+            "manychat": False,
+            "meta_ads": True
+        },
+        "theme": "dark"
     }
 }
 
