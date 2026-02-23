@@ -24,7 +24,7 @@ st.set_page_config(
 query_params = st.query_params
 if 'campaign' in query_params:
     campaign_from_url = query_params['campaign']
-    if campaign_from_url in ['bf25', 'imersao0126', 'desafio0326']:
+    if campaign_from_url in CAMPAIGNS:
         # Initialize session state if needed before setting
         if 'selected_campaign' not in st.session_state:
             st.session_state.selected_campaign = None
@@ -737,14 +737,14 @@ def render_campaign_selector():
                 period_start = campaign['period_start'].strftime('%d/%m/%Y')
                 period_end = campaign['period_end'].strftime('%d/%m/%Y')
                 
-                logo_path = LOGO_BF25 if campaign_id == "bf25" else LOGO_IMERSAO
+                campaign_logos = {"bf25": LOGO_BF25, "imersao0126": LOGO_IMERSAO}
+                logo_path = campaign_logos.get(campaign_id, LOGO_PATH)
                 try:
                     with open(logo_path, "rb") as f:
                         campaign_logo_data = base64.b64encode(f.read()).decode()
                     campaign_logo_html = f'<img class="campaign-logo" src="data:image/png;base64,{campaign_logo_data}" alt="{campaign["name"]}">'
                 except:
-                    icon = "🛒" if campaign_id == "bf25" else "🎓"
-                    campaign_logo_html = f'<span class="campaign-icon">{icon}</span>'
+                    campaign_logo_html = f'<span class="campaign-icon">📊</span>'
                 
                 st.markdown(f"""
                     <div class="campaign-card">
@@ -1749,6 +1749,7 @@ def render_desafio_captacao(config, secrets):
     revenue_principal = 0
     revenue_vip = 0
     revenue_ea = 0
+    df_principal = pd.DataFrame()
 
     if has_hotmart:
         try:
